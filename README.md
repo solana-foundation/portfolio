@@ -29,6 +29,8 @@ The app runs at [http://localhost:3000](http://localhost:3000).
 | `npm run format` | Format code with Prettier |
 | `npm run format:check` | Check formatting without writing |
 | `npm run typecheck` | Run TypeScript type checking |
+| `npm test` | Run tests with Vitest |
+| `npm run test:watch` | Run tests in watch mode |
 
 ## Architecture
 
@@ -53,3 +55,4 @@ src/
 - **Styling:** Tailwind CSS v4
 - **Linting:** ESLint with next config
 - **Formatting:** Prettier
+- **Testing:** Vitest + React Testing Library
