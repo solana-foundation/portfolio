@@ -53,3 +53,5 @@ src/
 - **Styling:** Tailwind CSS v4
 - **Linting:** ESLint with next config
 - **Formatting:** Prettier
+
+For details on why these tools were chosen and when to revisit, see [Frontend Tooling Decisions](docs/frontend-tooling.md).
