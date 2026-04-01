@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm add *)",
+      "Bash(npx *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git status *)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": ["Read(.env)", "Read(.env.*)"]
+  }
+}

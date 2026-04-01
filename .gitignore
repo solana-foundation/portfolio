@@ -14,6 +14,7 @@ yarn-error.log*
 # Environment files
 .env
 .env.*
+!.env.example
 
 # Dependencies
 node_modules/
@@ -22,3 +23,15 @@ node_modules/
 dist/
 build/
 out/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Test coverage
+coverage/
+
+# Claude Code local settings
+.claude/settings.local.json
