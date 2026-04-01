@@ -29,6 +29,8 @@ The app runs at [http://localhost:5173](http://localhost:5173).
 | `pnpm lint:fix` | Auto-fix all Biome issues |
 | `pnpm format` | Format files with Biome |
 | `pnpm typecheck` | Run TypeScript type checking |
+| `pnpm test` | Run tests once |
+| `pnpm test:watch` | Run tests in watch mode |
 
 ## Tech Stack
 
@@ -63,6 +65,6 @@ Feature code will be organized by business domain (e.g., `src/features/wallet/`,
 
 ## Contributing
 
-1. Run `pnpm lint` and `pnpm typecheck` before pushing
+1. Run `pnpm lint`, `pnpm typecheck`, and `pnpm test` before pushing
 2. All code must pass Biome checks and TypeScript strict mode
 3. Tests are colocated with source files (`*.test.ts` / `*.test.tsx`)
