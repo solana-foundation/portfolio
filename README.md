@@ -6,8 +6,8 @@ Open-source Solana portfolio tracker. View token balances, transaction history, 
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 20+
-- [pnpm](https://pnpm.io/) 9+
+- [Node.js](https://nodejs.org/) 22+
+- [pnpm](https://pnpm.io/) — use [Corepack](https://nodejs.org/api/corepack.html) with the pinned `packageManager` version
 
 ### Setup
 
@@ -29,6 +29,7 @@ The app runs at [http://localhost:5173](http://localhost:5173).
 | `pnpm lint:fix` | Auto-fix all Biome issues |
 | `pnpm format` | Format files with Biome |
 | `pnpm typecheck` | Run TypeScript type checking |
+| `pnpm build:vite` | Build for production (without type-checking) |
 | `pnpm test` | Run tests once |
 | `pnpm test:watch` | Run tests in watch mode |
 
@@ -68,3 +69,4 @@ Feature code will be organized by business domain (e.g., `src/features/wallet/`,
 1. Run `pnpm lint`, `pnpm typecheck`, and `pnpm test` before pushing
 2. All code must pass Biome checks and TypeScript strict mode
 3. Tests are colocated with source files (`*.test.ts` / `*.test.tsx`)
+4. CI runs lint, typecheck, test, and `build:vite` on every pull request — all checks must pass before merge
