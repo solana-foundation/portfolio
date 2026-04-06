@@ -34,6 +34,9 @@ Open-source Solana portfolio tracker. Vite + React + TypeScript + Tailwind v4.
 - Do NOT use `@solana/web3.js` v1 or deprecated packages
 - Do NOT expose API keys in `VITE_` env vars
 
+## Quality Gates
+- Preview deployments are automatic on all PRs via Vercel
+
 ## Documentation Maintenance
 When adding a new feature module to `src/features/`, update the system overview if it exists.
 When introducing a new convention, consider whether it belongs here or in a path-scoped `.claude/rules/` file.
