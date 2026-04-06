@@ -4,6 +4,7 @@ import {
   RouterProvider,
 } from '@tanstack/react-router'
 import { render } from '@testing-library/react'
+import { SolanaProvider } from '@/features/wallet'
 import { routeTree } from '@/routeTree.gen'
 
 export async function renderWithRouter(initialUrl = '/'): Promise<void> {
@@ -15,5 +16,9 @@ export async function renderWithRouter(initialUrl = '/'): Promise<void> {
   })
 
   await router.load()
-  render(<RouterProvider router={router} />)
+  render(
+    <SolanaProvider>
+      <RouterProvider router={router} />
+    </SolanaProvider>,
+  )
 }

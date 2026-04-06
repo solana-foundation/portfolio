@@ -26,6 +26,14 @@ Open-source Solana portfolio tracker. Vite + React + TypeScript + Tailwind v4.
 - Use the `EmptyState` component (`@/components/empty-state`) for empty data placeholders
 - Do not install `eslint`, `prettier`, or their plugins — Biome handles lint, format, and import sorting
 
+## Solana Stack
+- `@wallet-ui/react` — wallet connection UI, hooks, provider
+- `@wallet-ui/tailwind` — wallet component CSS
+- `@solana/kit` — core Solana SDK (transactions, RPC, encoding)
+- `@solana/kit-plugin-rpc` — RPC plugin for composable Kit client
+- Do NOT use `@solana/web3.js` v1 or deprecated packages
+- Do NOT expose API keys in `VITE_` env vars
+
 ## Quality Gates
 - Preview deployments are automatic on all PRs via Vercel
 
