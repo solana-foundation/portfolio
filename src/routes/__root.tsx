@@ -1,5 +1,6 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
+import { WalletUiDropdown } from '@/features/wallet'
 
 const TanStackRouterDevtools = import.meta.env.DEV
   ? lazy(() =>
@@ -43,13 +44,7 @@ function RootLayout() {
             ))}
           </nav>
 
-          <button
-            type="button"
-            disabled
-            className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white opacity-60"
-          >
-            Connect Wallet
-          </button>
+          <WalletUiDropdown />
         </div>
       </header>
 
