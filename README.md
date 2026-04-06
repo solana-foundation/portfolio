@@ -70,3 +70,9 @@ Feature code will be organized by business domain (e.g., `src/features/wallet/`,
 2. All code must pass Biome checks and TypeScript strict mode
 3. Tests are colocated with source files (`*.test.ts` / `*.test.tsx`)
 4. CI runs lint, typecheck, test, and `build:vite` on every pull request — all checks must pass before merge
+
+## Preview Deployments
+
+Every pull request automatically receives a preview deployment via Vercel. The preview URL appears as a comment on the PR and as a deployment status check. No configuration is needed from contributors.
+
+Preview builds use `pnpm build:vite` — the same command CI runs. If the preview fails, check the Vercel deployment logs linked from the PR status check.
