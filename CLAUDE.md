@@ -11,6 +11,7 @@ Open-source Solana portfolio tracker. Vite + React + TypeScript + Tailwind v4.
 - `pnpm format` — format files with Biome
 - `pnpm typecheck` — TypeScript strict check
 - `pnpm test` — run tests once
+- `pnpm test:coverage` — run tests with coverage report
 - `pnpm test:watch` — run tests in watch mode
 
 ## Code Conventions
@@ -34,8 +35,13 @@ Open-source Solana portfolio tracker. Vite + React + TypeScript + Tailwind v4.
 - Do NOT use `@solana/web3.js` v1 or deprecated packages
 - Do NOT expose API keys in `VITE_` env vars
 
+## Testing Guidelines
+- When writing or reviewing tests, see `.claude/rules/testing.md`
+
 ## Quality Gates
 - Preview deployments are automatic on all PRs via Vercel
+- CI runs `pnpm test:coverage` — test files must match `src/**/*.test.{ts,tsx}`
+- Coverage measures all `src/**/*.{ts,tsx}` except `routeTree.gen.ts`, `src/test/**`, `src/vite-env.d.ts`, and test files
 
 ## Documentation Maintenance
 When adding a new feature module to `src/features/`, update the system overview if it exists.

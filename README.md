@@ -31,6 +31,7 @@ The app runs at [http://localhost:5173](http://localhost:5173).
 | `pnpm typecheck` | Run TypeScript type checking |
 | `pnpm build:vite` | Build for production (without type-checking) |
 | `pnpm test` | Run tests once |
+| `pnpm test:coverage` | Run tests with coverage report |
 | `pnpm test:watch` | Run tests in watch mode |
 
 ## Tech Stack
@@ -63,6 +64,22 @@ src/
 ```
 
 Feature code will be organized by business domain (e.g., `src/features/wallet/`, `src/features/portfolio/`) as the project grows.
+
+## Code Coverage
+
+Run `pnpm test:coverage` to generate a coverage report. The terminal displays a summary table with statements, branches, functions, and line coverage for each file.
+
+An HTML report is also generated at `coverage/index.html` — open it in a browser for detailed, line-by-line coverage highlighting. The `coverage/` directory is git-ignored.
+
+CI also runs `pnpm test:coverage` on every PR, so coverage output is visible in GitHub Actions logs.
+
+### What CI picks up
+
+- **Test files:** `src/**/*.test.{ts,tsx}` — any `.test.ts` or `.test.tsx` file under `src/`
+- **Coverage source files:** `src/**/*.{ts,tsx}` — all TypeScript/TSX files under `src/`
+- **Excluded from coverage:** `src/routeTree.gen.ts` (auto-generated), `src/test/**` (test utilities), `src/vite-env.d.ts` (type declarations), and test files themselves
+
+Coverage thresholds are not enforced yet. The goal is visibility: identify gaps in shared logic and risky code paths, then improve coverage incrementally.
 
 ## Contributing
 
