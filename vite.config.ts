@@ -24,5 +24,24 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'json-summary'],
+      reportsDirectory: 'coverage',
+      all: true,
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/routeTree.gen.ts',
+        'src/test/**',
+        'src/vite-env.d.ts',
+        'src/**/*.test.{ts,tsx}',
+      ],
+      // thresholds: {
+      //   statements: 50,
+      //   branches: 50,
+      //   functions: 50,
+      //   lines: 50,
+      // },
+    },
   },
 })
