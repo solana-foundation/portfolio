@@ -43,6 +43,13 @@ export type DasAssetContent = {
 
 export type DasTokenInfo = {
   decimals?: number
+  /**
+   * Token balance in smallest unit. Helius serializes this as a JSON `number`,
+   * which silently loses precision for values above `Number.MAX_SAFE_INTEGER`
+   * (2^53 − 1). Mainstream SPL tokens are unaffected; high-supply meme tokens
+   * with extreme balances may be imprecise at the JSON parse boundary — before
+   * any of our code runs. Mitigation options tracked for Issue #6 / #9.
+   */
   balance?: number
   symbol?: string
   price_info?: {

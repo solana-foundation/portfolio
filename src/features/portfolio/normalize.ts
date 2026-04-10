@@ -19,7 +19,8 @@ function normalizeSplAsset(asset: DasAsset): PortfolioAsset | null {
   if (!FUNGIBLE_INTERFACES.has(asset.interface)) return null
 
   const tokenInfo = asset.token_info
-  if (!tokenInfo || tokenInfo.balance === undefined) return null
+  if (!tokenInfo || tokenInfo.balance == null || tokenInfo.balance === 0)
+    return null
 
   // Validates base58; throws if invalid.
   const mint = address(asset.id)

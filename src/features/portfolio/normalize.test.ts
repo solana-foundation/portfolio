@@ -194,6 +194,20 @@ describe('normalizeDasResponse', () => {
       expect(result.total).toBe(0)
     })
 
+    it('skips tokens where token_info.balance is zero (emptied account)', () => {
+      const zeroBalance: DasAsset = makeToken({
+        id: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
+        content: { metadata: { name: 'Lido Staked SOL', symbol: 'stSOL' } },
+        token_info: { balance: 0, decimals: 9 },
+      })
+      const response = makeResponse([zeroBalance])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items).toHaveLength(0)
+      expect(result.total).toBe(0)
+    })
+
     it('skips tokens where token_info is entirely absent', () => {
       const noTokenInfo: DasAsset = makeToken({
         id: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
