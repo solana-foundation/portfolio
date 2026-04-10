@@ -7,6 +7,25 @@ vi.mock('@wallet-ui/react', async () => {
   return createWalletUiMock()
 })
 
+// Store the query client reference captured by the spy component
+let capturedQueryClient: unknown = null
+
+vi.mock('@/routes/index', async () => {
+  const { createFileRoute } = await import('@tanstack/react-router')
+  const { useQueryClient: useQC } = await import('@tanstack/react-query')
+  const { createElement } = await import('react')
+
+  return {
+    Route: createFileRoute('/')({
+      component: () => {
+        const qc = useQC()
+        capturedQueryClient = qc
+        return createElement('h1', null, 'Dashboard')
+      },
+    }),
+  }
+})
+
 describe('Root layout', () => {
   it('renders nav links', async () => {
     await renderWithRouter('/')
@@ -42,5 +61,15 @@ describe('Root layout', () => {
     expect(
       screen.getByRole('heading', { name: 'Dashboard', level: 1 }),
     ).toBeInTheDocument()
+  })
+})
+
+describe('renderWithRouter QueryClientProvider', () => {
+  it('provides QueryClient to components rendered via renderWithRouter', async () => {
+    capturedQueryClient = null
+    await renderWithRouter('/')
+
+    expect(capturedQueryClient).not.toBeNull()
+    expect(capturedQueryClient).toBeDefined()
   })
 })
