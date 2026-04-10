@@ -2,9 +2,10 @@ import { createClient } from '@solana/kit'
 import { rpc } from '@solana/kit-plugin-rpc'
 import { useWalletUi } from '@wallet-ui/react'
 import { createContext, type ReactNode, useContext, useMemo } from 'react'
+import { das } from '@/features/portfolio/das-plugin'
 
 function createSolanaClient(endpoint: string) {
-  return createClient().use(rpc(endpoint))
+  return createClient().use(rpc(endpoint)).use(das(endpoint))
 }
 
 type SolanaClient = ReturnType<typeof createSolanaClient>
