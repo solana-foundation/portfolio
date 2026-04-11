@@ -1,22 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@solana/kit', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@solana/kit')>()
+vi.mock('@solana/rpc-transport-http', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@solana/rpc-transport-http')>()
   return {
     ...actual,
-    createDefaultRpcTransport: vi.fn(),
+    createHttpTransport: vi.fn(),
   }
 })
 
-import { createDefaultRpcTransport, isSolanaError } from '@solana/kit'
+import { isSolanaError } from '@solana/kit'
+import { createHttpTransport } from '@solana/rpc-transport-http'
 import type { DasRpc } from '@/features/portfolio/das-plugin'
 import { das } from '@/features/portfolio/das-plugin'
 
-/** Helper to install a spy transport as the mocked createDefaultRpcTransport's return value. */
+/** Helper to install a spy transport as the mocked createHttpTransport's return value. */
 function installSpyTransport(): ReturnType<typeof vi.fn> {
   const spyTransport = vi.fn()
-  vi.mocked(createDefaultRpcTransport).mockReturnValue(
-    spyTransport as unknown as ReturnType<typeof createDefaultRpcTransport>,
+  vi.mocked(createHttpTransport).mockReturnValue(
+    spyTransport as unknown as ReturnType<typeof createHttpTransport>,
   )
   return spyTransport
 }

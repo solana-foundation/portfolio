@@ -20,7 +20,9 @@
   "dependencies": {
     "@solana/kit": "^6.7.0",
     "@solana/kit-plugin-rpc": "^0.9.0",
+    "@solana/rpc-spec-types": "^6.7.0",
     "@solana/rpc-transformers": "^6.7.0",
+    "@solana/rpc-transport-http": "^6.7.0",
     "@tanstack/react-query": "^5.96.2",
     "@tanstack/react-router": "^1.168.10",
     "@wallet-ui/react": "^4.0.2",

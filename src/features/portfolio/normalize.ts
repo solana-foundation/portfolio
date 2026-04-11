@@ -19,7 +19,7 @@ function normalizeSplAsset(asset: DasAsset): PortfolioAsset | null {
   if (!FUNGIBLE_INTERFACES.has(asset.interface)) return null
 
   const tokenInfo = asset.token_info
-  if (!tokenInfo || tokenInfo.balance == null || tokenInfo.balance === 0)
+  if (!tokenInfo || tokenInfo.balance == null || tokenInfo.balance === 0n)
     return null
 
   // Validates base58; throws if invalid.
@@ -41,7 +41,7 @@ function normalizeSplAsset(asset: DasAsset): PortfolioAsset | null {
     symbol,
     name,
     imageUrl,
-    rawBalance: BigInt(tokenInfo.balance),
+    rawBalance: tokenInfo.balance,
     decimals,
     kind: 'spl-token',
   }
@@ -62,14 +62,14 @@ export function normalizeDasResponse(
 
   // Native SOL first.
   const nativeBalance = response.nativeBalance
-  if (nativeBalance && nativeBalance.lamports > 0) {
+  if (nativeBalance && nativeBalance.lamports > 0n) {
     try {
       items.push({
         mint: address(SOL_MINT),
         symbol: 'SOL',
         name: 'Solana',
         imageUrl: null,
-        rawBalance: BigInt(nativeBalance.lamports),
+        rawBalance: nativeBalance.lamports,
         decimals: 9,
         kind: 'native',
       })

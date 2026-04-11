@@ -41,7 +41,7 @@ describe('DasAssetList', () => {
     const list: DasAssetList = dasZeroNativeBalanceResponse
 
     expect(list.nativeBalance).toBeDefined()
-    expect(list.nativeBalance?.lamports).toBe(0)
+    expect(list.nativeBalance?.lamports).toBe(0n)
   })
 })
 
@@ -49,7 +49,7 @@ describe('NativeBalanceInfo', () => {
   it('accepts the nativeBalance fixture', () => {
     const nb: NativeBalanceInfo = nativeBalanceFixture
 
-    expect(nb.lamports).toBe(2_500_000_000)
+    expect(nb.lamports).toBe(2_500_000_000n)
     expect(nb.price_per_sol).toBeCloseTo(82.004, 2)
     expect(nb.total_price).toBeCloseTo(205.011, 2)
   })
@@ -108,11 +108,12 @@ describe('DasAsset', () => {
     expect(asset.token_info).toBeDefined()
     expect(asset.token_info?.symbol).toBe('USDC')
     expect(asset.token_info?.decimals).toBe(6)
-    expect(asset.token_info?.balance).toBe(50_000_000)
+    expect(asset.token_info?.balance).toBe(50_000_000n)
     expect(asset.token_info?.price_info?.price_per_token).toBeCloseTo(
       0.99989,
       4,
     )
+    expect(asset.token_info?.price_info?.total_price).toBeCloseTo(49.9945, 4)
     expect(asset.token_info?.price_info?.currency).toBe('USDC')
     expect(asset.token_info?.mint_authority).toBeDefined()
     expect(asset.token_info?.freeze_authority).toBeDefined()

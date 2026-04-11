@@ -1,9 +1,10 @@
 /**
  * Synthetic DAS `getAssetsByOwner` fixture.
  *
- * Constructed from verified live Helius DAS API responses and cross-referenced
- * against current helius-sdk types. Field names and structures match production
- * Helius responses.
+ * This is a representative fixture assembled from verified live DAS API
+ * responses (via a Helius provider) and cross-referenced against the Metaplex
+ * DAS standard. Bigint literals are used wherever the current plugin
+ * materializes integer-valued fields as `bigint` at runtime.
  *
  * NOTE: No type imports from das-types.ts — this fixture is plain data.
  * Tests assign fixture data to typed variables to verify type correctness.
@@ -17,8 +18,8 @@ export const FIXTURE_OWNER = '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'
 // ---------------------------------------------------------------------------
 
 /**
- * USDC: well-known fungible token with full metadata, token_info.symbol, and price_info.
- * Matches real Helius response shape for major tokens.
+ * USDC: well-known fungible token with full metadata, token_info.symbol, and
+ * representative price_info fields.
  */
 export const fungibleTokenItem = {
   interface: 'FungibleToken',
@@ -58,15 +59,15 @@ export const fungibleTokenItem = {
     creator_hash: '',
     asset_hash: '',
     tree: '',
-    seq: 0,
-    leaf_id: 0,
+    seq: 0n,
+    leaf_id: 0n,
   },
   grouping: [],
   royalty: {
     royalty_model: 'creators',
     target: null,
     percent: 0.0,
-    basis_points: 0,
+    basis_points: 0n,
     primary_sale_happened: false,
     locked: false,
   },
@@ -83,8 +84,8 @@ export const fungibleTokenItem = {
   burnt: false,
   token_info: {
     symbol: 'USDC',
-    balance: 50_000_000,
-    supply: 26_000_000_000_000_000,
+    balance: 50_000_000n,
+    supply: 26_000_000_000_000_000n,
     decimals: 6,
     token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
     associated_token_address: '3emsAVdmGKoHYRDjKMh81bFSynfEDMYmU1XNGqpwChFV',
@@ -92,6 +93,7 @@ export const fungibleTokenItem = {
     freeze_authority: '3sNBr7kMccME5D55xNgsmYpZFLFL28izq2bVjMpiMoo7',
     price_info: {
       price_per_token: 0.99989,
+      total_price: 49.9945,
       currency: 'USDC',
     },
   },
@@ -122,15 +124,15 @@ export const fungibleAssetItem = {
     creator_hash: '',
     asset_hash: '',
     tree: '',
-    seq: 0,
-    leaf_id: 0,
+    seq: 0n,
+    leaf_id: 0n,
   },
   grouping: [],
   royalty: {
     royalty_model: 'creators',
     target: null,
     percent: 0.0,
-    basis_points: 0,
+    basis_points: 0n,
     primary_sale_happened: false,
     locked: false,
   },
@@ -146,7 +148,7 @@ export const fungibleAssetItem = {
   mutable: true,
   burnt: false,
   token_info: {
-    balance: 3_500_000_000,
+    balance: 3_500_000_000n,
     decimals: 9,
     token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
     associated_token_address: 'B9fC4iMofqZ1xrzPxjJgJfBQEmYgjQ4ArqFxVSiNYae7',
@@ -194,8 +196,8 @@ export const nftItem = {
     creator_hash: '',
     asset_hash: '',
     tree: '',
-    seq: 0,
-    leaf_id: 0,
+    seq: 0n,
+    leaf_id: 0n,
   },
   grouping: [
     {
@@ -207,14 +209,14 @@ export const nftItem = {
     royalty_model: 'creators',
     target: null,
     percent: 0.05,
-    basis_points: 500,
+    basis_points: 500n,
     primary_sale_happened: true,
     locked: false,
   },
   creators: [
     {
       address: 'BeVVXuvvGNmFBeK1bazfc2CYdvvJ5AFi4aNv75Ah7vo8',
-      share: 100,
+      share: 100n,
       verified: true,
     },
   ],
@@ -226,8 +228,8 @@ export const nftItem = {
     owner: FIXTURE_OWNER,
   },
   supply: {
-    print_max_supply: 0,
-    print_current_supply: 0,
+    print_max_supply: 0n,
+    print_current_supply: 0n,
     edition_nonce: null,
   },
   mutable: true,
@@ -237,8 +239,9 @@ export const nftItem = {
 
 /**
  * Unknown token with no content (absent from response).
- * token_info has balance and decimals but no symbol or price_info.
- * Tests defensive handling of missing metadata.
+ * token_info uses a representative balance above MAX_SAFE_INTEGER and decimals
+ * but no symbol or price_info. Tests defensive handling of missing metadata
+ * and large integer values.
  */
 export const unknownTokenItem = {
   interface: 'FungibleToken',
@@ -252,15 +255,15 @@ export const unknownTokenItem = {
     creator_hash: '',
     asset_hash: '',
     tree: '',
-    seq: 0,
-    leaf_id: 0,
+    seq: 0n,
+    leaf_id: 0n,
   },
   grouping: [],
   royalty: {
     royalty_model: 'creators',
     target: null,
     percent: 0.0,
-    basis_points: 0,
+    basis_points: 0n,
     primary_sale_happened: false,
     locked: false,
   },
@@ -276,7 +279,7 @@ export const unknownTokenItem = {
   mutable: true,
   burnt: false,
   token_info: {
-    balance: 100_000_000,
+    balance: 9_314_309_076_870_502_293n,
     decimals: 5,
     token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
     associated_token_address: 'A1b2C3d4E5f6G7h8I9j0K1L2M3N4O5P6Q7R8S9T0U1V2',
@@ -307,15 +310,15 @@ export const noBalanceItem = {
     creator_hash: '',
     asset_hash: '',
     tree: '',
-    seq: 0,
-    leaf_id: 0,
+    seq: 0n,
+    leaf_id: 0n,
   },
   grouping: [],
   royalty: {
     royalty_model: 'creators',
     target: null,
     percent: 0.0,
-    basis_points: 0,
+    basis_points: 0n,
     primary_sale_happened: false,
     locked: false,
   },
@@ -338,11 +341,12 @@ export const noBalanceItem = {
 }
 
 // ---------------------------------------------------------------------------
-// Native balance fixture (verified shape from live API)
+// Native balance fixture. Shape verified from live API; values are
+// representative test data.
 // ---------------------------------------------------------------------------
 
 export const nativeBalanceFixture = {
-  lamports: 2_500_000_000,
+  lamports: 2_500_000_000n,
   price_per_sol: 82.00442504882812,
   total_price: 205.01106262207031,
 }
@@ -389,7 +393,7 @@ export const dasZeroNativeBalanceResponse = {
   page: 1,
   items: [],
   nativeBalance: {
-    lamports: 0,
+    lamports: 0n,
     price_per_sol: 82.0,
     total_price: 0,
   },
@@ -397,7 +401,7 @@ export const dasZeroNativeBalanceResponse = {
 
 /**
  * Fungible asset with content present but inner metadata/files/links objects
- * all empty. Observed in live Helius responses for some FungibleAssets — the
+ * all empty. Observed in live DAS responses for some FungibleAssets — the
  * normalizer must fall back to the truncated address rather than surface
  * empty strings or throw.
  */
@@ -410,7 +414,7 @@ export const emptyMetadataItem = {
     links: {},
   },
   token_info: {
-    balance: 1000,
+    balance: 1000n,
     decimals: 6,
   },
   ownership: {

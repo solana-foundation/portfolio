@@ -1,8 +1,9 @@
 /**
- * Raw Helius DAS (Digital Asset Standard) API response types.
- *
- * Used only at the fetch boundary. Downstream code should use PortfolioAsset.
- * Fields are modeled loosely (optional) to handle unexpected API responses.
+ * Raw DAS (Digital Asset Standard) API response types.
+ * Used at the fetch boundary; downstream code should use PortfolioAsset.
+ * Through this plugin's parse + response-transformer chain, integer-valued
+ * fields materialize as `bigint` unless explicitly allowlisted to stay
+ * `number`.
  */
 
 // ---------------------------------------------------------------------------
@@ -10,7 +11,7 @@
 // ---------------------------------------------------------------------------
 
 export type NativeBalanceInfo = {
-  lamports: number
+  lamports: bigint
   price_per_sol: number
   total_price: number
 }
@@ -43,14 +44,8 @@ export type DasAssetContent = {
 
 export type DasTokenInfo = {
   decimals?: number
-  /**
-   * Token balance in smallest unit. Helius serializes this as a JSON `number`,
-   * which silently loses precision for values above `Number.MAX_SAFE_INTEGER`
-   * (2^53 − 1). Mainstream SPL tokens are unaffected; high-supply meme tokens
-   * with extreme balances may be imprecise at the JSON parse boundary — before
-   * any of our code runs. Mitigation options tracked for Issue #6 / #9.
-   */
-  balance?: number
+  /** Token balance in smallest unit (bigint for precision above MAX_SAFE_INTEGER). */
+  balance?: bigint
   symbol?: string
   price_info?: {
     price_per_token?: number
@@ -58,7 +53,7 @@ export type DasTokenInfo = {
     currency?: string
   }
   mint_authority?: string
-  supply?: number
+  supply?: bigint
   token_program?: string
   associated_token_address?: string
   freeze_authority?: string
@@ -68,6 +63,11 @@ export type DasTokenInfo = {
 // Asset
 // ---------------------------------------------------------------------------
 
+// Live DAS responses include additional numeric fields we do not model yet.
+// If we type them later, keep integer counters as `bigint` (for example
+// compression.seq, compression.leaf_id, royalty.basis_points, creators[].share,
+// supply.print_*, and token_info.token_accounts[].balance). `royalty.percent`
+// remains `number`.
 export type DasAsset = {
   id: string
   interface: string
@@ -80,10 +80,7 @@ export type DasAsset = {
 // Asset list (getAssetsByOwner response)
 // ---------------------------------------------------------------------------
 
-// Note: live Helius `getAssetsByOwner` responses also include a top-level
-// `last_indexed_slot: number` field. Not modeled here because no consumer
-// reads it yet — TypeScript structural typing allows extra fields on
-// non-literal assignments, so adding this later is non-breaking.
+// `last_indexed_slot` also present in live responses but not modeled yet.
 export type DasAssetList = {
   total: number
   limit: number
@@ -96,7 +93,7 @@ export type DasAssetList = {
 // RPC params
 // ---------------------------------------------------------------------------
 
-// TODO: Helius DAS also accepts `sortBy`, `before`, `after`, `cursor`, and
+// TODO: DAS also accepts `sortBy`, `before`, `after`, `cursor`, and
 // `options`. Add them to this type when pagination or advanced filtering is
 // needed (e.g. transaction history).
 export type DasGetAssetsByOwnerParams = {

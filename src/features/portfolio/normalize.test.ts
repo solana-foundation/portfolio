@@ -87,12 +87,12 @@ describe('normalizeDasResponse', () => {
       expect(sol.name).toBe('Solana')
       expect(sol.decimals).toBe(9)
       expect(sol.kind).toBe('native')
-      expect(sol.rawBalance).toBe(BigInt(nativeBalanceFixture.lamports))
+      expect(sol.rawBalance).toBe(nativeBalanceFixture.lamports)
     })
 
-    it('converts lamports to bigint for rawBalance', () => {
+    it('passes lamports bigint through to rawBalance', () => {
       const response = makeResponse([], {
-        nativeBalance: { lamports: 999, price_per_sol: 0, total_price: 0 },
+        nativeBalance: { lamports: 999n, price_per_sol: 0, total_price: 0 },
       })
 
       const result = normalizeDasResponse(response)
@@ -155,7 +155,7 @@ describe('normalizeDasResponse', () => {
           metadata: { name: 'Mad Lads #1234', symbol: 'MAD' },
           links: { image: 'https://arweave.net/abc123' },
         },
-        token_info: { balance: 1, decimals: 0 },
+        token_info: { balance: 1n, decimals: 0 },
         ownership: { owner: '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV' },
       }
       const response = makeResponse([nft])
@@ -170,7 +170,7 @@ describe('normalizeDasResponse', () => {
       const programmableNft: DasAsset = {
         interface: 'ProgrammableNFT',
         id: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
-        token_info: { balance: 1, decimals: 0 },
+        token_info: { balance: 1n, decimals: 0 },
         ownership: { owner: '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV' },
       }
       const response = makeResponse([programmableNft])
@@ -198,7 +198,7 @@ describe('normalizeDasResponse', () => {
       const zeroBalance: DasAsset = makeToken({
         id: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
         content: { metadata: { name: 'Lido Staked SOL', symbol: 'stSOL' } },
-        token_info: { balance: 0, decimals: 9 },
+        token_info: { balance: 0n, decimals: 9 },
       })
       const response = makeResponse([zeroBalance])
 
@@ -219,10 +219,10 @@ describe('normalizeDasResponse', () => {
       expect(result.items).toHaveLength(0)
     })
 
-    it('converts token_info.balance to bigint for rawBalance', () => {
+    it('passes token_info.balance bigint through to rawBalance', () => {
       const token: DasAsset = makeToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        token_info: { balance: 123_456_789, decimals: 6 },
+        token_info: { balance: 123_456_789n, decimals: 6 },
       })
       const response = makeResponse([token])
 
@@ -241,7 +241,7 @@ describe('normalizeDasResponse', () => {
         const token: DasAsset = makeToken({
           id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           content: { metadata: { symbol: 'MetadataSymbol' } },
-          token_info: { symbol: 'TokenInfoSymbol', balance: 1, decimals: 0 },
+          token_info: { symbol: 'TokenInfoSymbol', balance: 1n, decimals: 0 },
         })
         const response = makeResponse([token])
 
@@ -305,7 +305,7 @@ describe('normalizeDasResponse', () => {
           content: {
             files: [{ uri: 'https://example.com/fallback.png' }],
           },
-          token_info: { balance: 1, decimals: 0 },
+          token_info: { balance: 1n, decimals: 0 },
         })
         const response = makeResponse([token])
 
@@ -346,7 +346,7 @@ describe('normalizeDasResponse', () => {
       it('falls back to 0 when token_info.decimals is absent', () => {
         const token: DasAsset = makeToken({
           id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-          token_info: { balance: 100 },
+          token_info: { balance: 100n },
         })
         const response = makeResponse([token])
 
@@ -365,7 +365,7 @@ describe('normalizeDasResponse', () => {
       const token: DasAsset = makeToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         content: null,
-        token_info: { balance: 500, decimals: 2 },
+        token_info: { balance: 500n, decimals: 2 },
       })
       const response = makeResponse([token])
 
@@ -400,11 +400,11 @@ describe('normalizeDasResponse', () => {
 
       const invalid: DasAsset = makeToken({
         id: '!!not-valid-base58!!',
-        token_info: { balance: 100, decimals: 0 },
+        token_info: { balance: 100n, decimals: 0 },
       })
       const valid: DasAsset = makeToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        token_info: { balance: 200, decimals: 6 },
+        token_info: { balance: 200n, decimals: 6 },
       })
       const response = makeResponse([invalid, valid])
 
@@ -429,7 +429,7 @@ describe('normalizeDasResponse', () => {
             id: '!!bad!!',
             interface: 'FungibleToken',
             ownership: { owner: 'test' },
-            token_info: { balance: 1, decimals: 0 },
+            token_info: { balance: 1n, decimals: 0 },
           },
         ],
       } as DasAssetList
@@ -443,11 +443,11 @@ describe('normalizeDasResponse', () => {
       const response = makeResponse([
         makeToken({
           id: '!!invalid1!!',
-          token_info: { balance: 1, decimals: 0 },
+          token_info: { balance: 1n, decimals: 0 },
         }),
         makeToken({
           id: '!!invalid2!!',
-          token_info: { balance: 2, decimals: 0 },
+          token_info: { balance: 2n, decimals: 0 },
         }),
       ])
 
@@ -511,7 +511,7 @@ describe('normalizeDasResponse', () => {
     it('preserves SPL token order after filtering (no re-sorting)', () => {
       const tokenA: DasAsset = makeToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-        token_info: { balance: 1, decimals: 0, symbol: 'A' },
+        token_info: { balance: 1n, decimals: 0, symbol: 'A' },
       })
       const nft: DasAsset = {
         interface: 'V1_NFT',
@@ -520,7 +520,7 @@ describe('normalizeDasResponse', () => {
       }
       const tokenB: DasAsset = makeToken({
         id: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
-        token_info: { balance: 2, decimals: 0, symbol: 'B' },
+        token_info: { balance: 2n, decimals: 0, symbol: 'B' },
       })
 
       const response = makeResponse([tokenA, nft, tokenB])
@@ -561,7 +561,7 @@ describe('normalizeDasResponse', () => {
       const unknown = result.items[3]!
       expect(unknown.symbol).toBe('DezX...B263')
       expect(unknown.name).toBe('DezX...B263')
-      expect(unknown.rawBalance).toBe(100_000_000n)
+      expect(unknown.rawBalance).toBe(9_314_309_076_870_502_293n)
       expect(unknown.decimals).toBe(5)
       expect(unknown.imageUrl).toBeNull()
     })
