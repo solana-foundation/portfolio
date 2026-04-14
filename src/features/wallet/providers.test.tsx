@@ -31,6 +31,17 @@ function ClientConsumer() {
   return <span data-testid="client">{client != null ? 'defined' : 'null'}</span>
 }
 
+function DasConsumer() {
+  const client = useClient()
+  return (
+    <span data-testid="das">
+      {(client as unknown as { das?: unknown }).das != null
+        ? 'defined'
+        : 'undefined'}
+    </span>
+  )
+}
+
 function WalletHookConsumer() {
   const { account } = useWallet()
   return (
@@ -112,5 +123,14 @@ describe('SolanaProvider', () => {
     expect(screen.getByTestId('chain-url')).toHaveTextContent(
       'https://api.devnet.solana.com',
     )
+  })
+
+  it('provides a client with das property via useClient', () => {
+    render(
+      <SolanaProvider>
+        <DasConsumer />
+      </SolanaProvider>,
+    )
+    expect(screen.getByTestId('das')).toHaveTextContent('defined')
   })
 })

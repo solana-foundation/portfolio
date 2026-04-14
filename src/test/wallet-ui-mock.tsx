@@ -39,7 +39,8 @@ export function createWalletUiMock() {
       return <button type="button">Select Wallet</button>
     },
     createWalletUiConfig: (props: unknown) => props,
-    createSolanaDevnet: () => MOCK_CLUSTER,
+    createSolanaDevnet: (url?: string) =>
+      url ? { ...MOCK_CLUSTER, url } : MOCK_CLUSTER,
     useWalletUi: () => {
       useRequireProvider('useWalletUi')
       return {

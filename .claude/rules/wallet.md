@@ -4,7 +4,8 @@ globs: src/features/wallet/**
 
 # Wallet Feature Rules
 
-- All `@wallet-ui/*`, `@solana/kit`, `@solana/kit-plugin-rpc`, and `@wallet-standard/*` imports are confined to this directory
+- `@wallet-ui/*`, `@solana/kit-plugin-rpc`, and `@wallet-standard/*` imports are confined to this directory
+- `@solana/kit` is the core Solana SDK — used project-wide by any feature that needs addresses, RPC types, or plugin primitives
 - wallet-ui handles wallet UI (connect/disconnect, dropdown, address display, accessibility)
 - We handle RPC via Kit plugin client (`createClient().use(rpc(...))`)
-- The rest of the app imports from `@/features/wallet` barrel — never from library packages directly
+- The rest of the app imports wallet hooks from `@/features/wallet` barrel — never from library packages directly

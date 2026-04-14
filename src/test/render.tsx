@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   createMemoryHistory,
   createRouter,
@@ -15,10 +16,16 @@ export async function renderWithRouter(initialUrl = '/'): Promise<void> {
     defaultPendingMinMs: 0,
   })
 
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false, gcTime: 0 } },
+  })
+
   await router.load()
   render(
-    <SolanaProvider>
-      <RouterProvider router={router} />
-    </SolanaProvider>,
+    <QueryClientProvider client={queryClient}>
+      <SolanaProvider>
+        <RouterProvider router={router} />
+      </SolanaProvider>
+    </QueryClientProvider>,
   )
 }
