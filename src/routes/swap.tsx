@@ -1,5 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { EmptyState } from '@/components/empty-state'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty'
 
 export const Route = createFileRoute('/swap')({
   component: SwapPage,
@@ -7,14 +13,12 @@ export const Route = createFileRoute('/swap')({
 
 function SwapPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Swap</h1>
-      <div className="mt-6">
-        <EmptyState
-          title="Swap unavailable"
-          description="Connect a wallet to swap tokens."
-        />
-      </div>
-    </div>
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>Swap unavailable</EmptyTitle>
+        <EmptyDescription>Connect a wallet to swap tokens.</EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent />
+    </Empty>
   )
 }

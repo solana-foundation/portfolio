@@ -1,5 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { EmptyState } from '@/components/empty-state'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty'
 
 export const Route = createFileRoute('/')({
   component: DashboardPage,
@@ -7,14 +13,14 @@ export const Route = createFileRoute('/')({
 
 function DashboardPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-      <div className="mt-6">
-        <EmptyState
-          title="No wallet connected"
-          description="Connect a wallet to view your portfolio overview."
-        />
-      </div>
-    </div>
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>No wallet connected</EmptyTitle>
+        <EmptyDescription>
+          Connect a wallet to view your portfolio overview.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent />
+    </Empty>
   )
 }
