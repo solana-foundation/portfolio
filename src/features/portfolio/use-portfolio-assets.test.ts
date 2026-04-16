@@ -16,7 +16,10 @@ import {
 import type { DasAssetList } from '@/features/portfolio/das-types'
 import { normalizeDasResponse } from '@/features/portfolio/normalize'
 import { portfolioKeys } from '@/features/portfolio/query-client'
-import { usePortfolioAssets } from '@/features/portfolio/use-portfolio-assets'
+import {
+  portfolioAssetsQueryOptions,
+  usePortfolioAssets,
+} from '@/features/portfolio/use-portfolio-assets'
 import { useClient, useWallet } from '@/features/wallet'
 
 const MOCK_CLUSTER_DEVNET = {
@@ -263,6 +266,11 @@ describe('usePortfolioAssets', () => {
     })
   })
 
+  it('also exports portfolioAssetsQueryOptions from the feature barrel', async () => {
+    const barrel = await import('@/features/portfolio')
+    expect(typeof barrel.portfolioAssetsQueryOptions).toBe('function')
+  })
+
   it('stores a cluster change under a separate cache entry', async () => {
     const { client } = makeMockClient()
     setClient(client)
@@ -287,5 +295,60 @@ describe('usePortfolioAssets', () => {
     // new cluster uses a different key, so the devnet slot is not overwritten.
     const devnetDataAfter = queryClient.getQueryData(devnetKey)
     expect(devnetDataAfter).toEqual(devnetDataBefore)
+  })
+})
+
+describe('portfolioAssetsQueryOptions', () => {
+  it('returns an object with queryKey and queryFn', () => {
+    const { client } = makeMockClient()
+    const options = portfolioAssetsQueryOptions({
+      address: ADDR_A,
+      clusterId: 'solana:devnet',
+      das: client.das as unknown as ReturnType<typeof useClient>['das'],
+    })
+    expect(options.queryKey).toBeDefined()
+    expect(typeof options.queryFn).toBe('function')
+  })
+
+  it('uses the portfolioKeys.assets hierarchy for the queryKey', () => {
+    const { client } = makeMockClient()
+    const options = portfolioAssetsQueryOptions({
+      address: ADDR_A,
+      clusterId: 'solana:devnet',
+      das: client.das as unknown as ReturnType<typeof useClient>['das'],
+    })
+    expect(options.queryKey).toEqual(
+      portfolioKeys.assets('solana:devnet', ADDR_A),
+    )
+  })
+
+  it('produces a stable queryKey across calls with the same inputs', () => {
+    const { client } = makeMockClient()
+    const a = portfolioAssetsQueryOptions({
+      address: ADDR_A,
+      clusterId: 'solana:devnet',
+      das: client.das as unknown as ReturnType<typeof useClient>['das'],
+    })
+    const b = portfolioAssetsQueryOptions({
+      address: ADDR_A,
+      clusterId: 'solana:devnet',
+      das: client.das as unknown as ReturnType<typeof useClient>['das'],
+    })
+    expect(a.queryKey).toEqual(b.queryKey)
+  })
+
+  it('differentiates queryKeys when the clusterId changes', () => {
+    const { client } = makeMockClient()
+    const devnet = portfolioAssetsQueryOptions({
+      address: ADDR_A,
+      clusterId: 'solana:devnet',
+      das: client.das as unknown as ReturnType<typeof useClient>['das'],
+    })
+    const mainnet = portfolioAssetsQueryOptions({
+      address: ADDR_A,
+      clusterId: 'solana:mainnet',
+      das: client.das as unknown as ReturnType<typeof useClient>['das'],
+    })
+    expect(devnet.queryKey).not.toEqual(mainnet.queryKey)
   })
 })

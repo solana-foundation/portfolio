@@ -4,4 +4,7 @@ export { formatBalance } from './format'
 export { normalizeDasResponse } from './normalize'
 export { createPortfolioQueryClient, portfolioKeys } from './query-client'
 export type { PortfolioAsset, PortfolioAssetList } from './types'
-export { usePortfolioAssets } from './use-portfolio-assets'
+export {
+  portfolioAssetsQueryOptions,
+  usePortfolioAssets,
+} from './use-portfolio-assets'
