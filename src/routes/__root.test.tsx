@@ -1,4 +1,5 @@
 import { screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { renderWithRouter } from '@/test/render'
 
@@ -44,7 +45,9 @@ describe('Root layout', () => {
     await renderWithRouter('/')
 
     const header = screen.getByRole('banner')
-    expect(within(header).getByRole('button')).toBeInTheDocument()
+    expect(
+      within(header).getByRole('button', { name: /select wallet/i }),
+    ).toBeInTheDocument()
   })
 
   it('does not render a disabled wallet button in the header', async () => {
@@ -55,6 +58,21 @@ describe('Root layout', () => {
     for (const button of buttons) {
       expect(button).not.toBeDisabled()
     }
+  })
+
+  it('renders a mobile nav toggle that expands nav links', async () => {
+    const user = userEvent.setup()
+    await renderWithRouter('/')
+
+    const header = screen.getByRole('banner')
+    const toggle = within(header).getByRole('button', {
+      name: /open navigation/i,
+    })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    expect(toggle).toHaveAccessibleName(/close navigation/i)
   })
 
   it('renders routed child content', async () => {
