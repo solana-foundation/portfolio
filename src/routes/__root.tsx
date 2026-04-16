@@ -11,7 +11,6 @@ const TanStackRouterDevtools = import.meta.env.DEV
   : () => null
 
 const navLinks = [
-  { to: '/', label: 'Dashboard' },
   { to: '/portfolio', label: 'Portfolio' },
   { to: '/transactions', label: 'Transactions' },
   { to: '/swap', label: 'Swap' },

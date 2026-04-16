@@ -1,26 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from '@/components/ui/empty'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
-  component: DashboardPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/portfolio' })
+  },
 })
-
-function DashboardPage() {
-  return (
-    <Empty>
-      <EmptyHeader>
-        <EmptyTitle>No wallet connected</EmptyTitle>
-        <EmptyDescription>
-          Connect a wallet to view your portfolio overview.
-        </EmptyDescription>
-      </EmptyHeader>
-      <EmptyContent />
-    </Empty>
-  )
-}

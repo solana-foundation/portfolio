@@ -20,7 +20,7 @@ vi.mock('@/routes/index', async () => {
       component: () => {
         const qc = useQC()
         capturedQueryClient = qc
-        return createElement('h1', null, 'Dashboard')
+        return createElement('h1', null, 'Root fixture')
       },
     }),
   }
@@ -30,12 +30,14 @@ describe('Root layout', () => {
   it('renders nav links', async () => {
     await renderWithRouter('/')
 
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Portfolio' })).toBeInTheDocument()
     expect(
       screen.getByRole('link', { name: 'Transactions' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Swap' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Dashboard' }),
+    ).not.toBeInTheDocument()
   })
 
   it('renders a wallet connection button in the header', async () => {
@@ -59,7 +61,7 @@ describe('Root layout', () => {
     await renderWithRouter('/')
 
     expect(
-      screen.getByRole('heading', { name: 'Dashboard', level: 1 }),
+      screen.getByRole('heading', { name: 'Root fixture', level: 1 }),
     ).toBeInTheDocument()
   })
 })
