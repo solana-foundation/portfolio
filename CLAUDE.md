@@ -43,6 +43,10 @@ Open-source Solana portfolio tracker. Vite + React + TypeScript + Tailwind v4.
 - CI runs `pnpm test:coverage` — test files must match `src/**/*.test.{ts,tsx}`
 - Coverage measures all `src/**/*.{ts,tsx}` except `routeTree.gen.ts`, `src/test/**`, `src/vite-env.d.ts`, and test files
 
+## Dependency Updates
+- Dependabot opens grouped PRs weekly (`.github/dependabot.yml`) — see README "Dependency Updates" section for groups and review flow
+- No auto-merge: every update PR is reviewed and merged manually
+
 ## Documentation Maintenance
 When adding a new feature module to `src/features/`, update the system overview if it exists.
 When introducing a new convention, consider whether it belongs here or in a path-scoped `.claude/rules/` file.
