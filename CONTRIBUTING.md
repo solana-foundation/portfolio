@@ -121,10 +121,14 @@ Git on Windows defaults to `core.autocrlf=true`, which converts line endings to 
 
 To fix:
 
+> ⚠️ This will discard any uncommitted changes. Run `git stash` first if you have work in progress.
+
 ```bash
+git stash                  # save any in-progress work
 git config core.autocrlf input
 git rm --cached -r .
 git reset --hard
+git stash pop              # restore your work (line endings will now be LF)
 ```
 
 This re-checks out files with LF endings. Do this once on a fresh clone.
