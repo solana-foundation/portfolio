@@ -61,6 +61,10 @@ describe('/portfolio route', () => {
     expect(
       within(main).getByRole('button', { name: /select wallet/i }),
     ).toBeInTheDocument()
+
+    expect(
+      document.querySelector('[data-slot="filter-row-skeleton"]'),
+    ).not.toBeInTheDocument()
   })
 
   it('renders skeletons and aria-busy while data is loading', async () => {
@@ -83,6 +87,16 @@ describe('/portfolio route', () => {
     ).toBeInTheDocument()
     // Screen reader loading announcement
     expect(screen.getByRole('status')).toHaveTextContent(/loading portfolio/i)
+
+    expect(
+      document.querySelector('[data-slot="breakdown-card-skeleton"]'),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="filter-row-skeleton"]'),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="token-table"]'),
+    ).toBeInTheDocument()
   })
 
   it('renders a destructive alert with retry when the fetch fails', async () => {
@@ -101,6 +115,13 @@ describe('/portfolio route', () => {
     const retryButton = screen.getByRole('button', { name: /retry/i })
     await userEvent.click(retryButton)
     expect(mockRefetch).toHaveBeenCalledOnce()
+
+    expect(
+      document.querySelector('[data-slot="breakdown-card-skeleton"]'),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="filter-row-skeleton"]'),
+    ).toBeInTheDocument()
   })
 
   it('renders a no-tokens empty state when the wallet has zero assets', async () => {
@@ -116,6 +137,13 @@ describe('/portfolio route', () => {
     expect(screen.getByText(/no tokens/i)).toBeInTheDocument()
     const tableRegion = screen.getByRole('region', { name: /token list/i })
     expect(within(tableRegion).queryByText('SOL')).not.toBeInTheDocument()
+
+    expect(
+      document.querySelector('[data-slot="breakdown-card-skeleton"]'),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="filter-row-skeleton"]'),
+    ).toBeInTheDocument()
   })
 
   it('renders the header and token rows when the wallet has assets', async () => {
@@ -153,5 +181,144 @@ describe('/portfolio route', () => {
     const tableRegion = screen.getByRole('region', { name: /token list/i })
     expect(within(tableRegion).getByText('SOL')).toBeInTheDocument()
     expect(within(tableRegion).getByText('USDC')).toBeInTheDocument()
+
+    expect(
+      document.querySelector('[data-slot="breakdown-card-skeleton"]'),
+    ).toBeInTheDocument()
+    expect(
+      document.querySelector('[data-slot="filter-row-skeleton"]'),
+    ).toBeInTheDocument()
+  })
+
+  it('locks the outer page shell padding (outer node) and content max-width (inner node)', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: { items: [], total: 0 },
+    }
+
+    await renderWithRouter('/portfolio')
+
+    const outer = document.querySelector('[data-slot="portfolio-page"]')
+    expect(outer).toBeInTheDocument()
+    const outerClassName = outer?.className ?? ''
+    expect(outerClassName).toContain('w-full')
+    expect(outerClassName).toContain('px-4')
+    expect(outerClassName).toContain('py-12')
+    expect(outerClassName).toContain('lg:px-12')
+    expect(outerClassName).toContain('lg:py-20')
+
+    const inner = document.querySelector('[data-slot="portfolio-content"]')
+    expect(inner).toBeInTheDocument()
+    const innerClassName = inner?.className ?? ''
+    expect(innerClassName).toContain('mx-auto')
+    expect(innerClassName).toContain('w-full')
+    expect(innerClassName).toContain('max-w-[1140px]')
+    expect(innerClassName).toContain('flex')
+    expect(innerClassName).toContain('flex-col')
+    expect(innerClassName).toContain('gap-6')
+    expect(innerClassName).toContain('items-center')
+  })
+
+  it('locks the header region direction at lg: (stacks on mobile, two-column at lg)', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: { items: [], total: 0 },
+    }
+
+    await renderWithRouter('/portfolio')
+
+    const headerRegion = document.querySelector(
+      '[data-slot="portfolio-header-region"]',
+    )
+    expect(headerRegion).toBeInTheDocument()
+    const className = headerRegion?.className ?? ''
+    expect(className).toContain('flex')
+    expect(className).toContain('flex-col')
+    expect(className).toContain('lg:flex-row')
+    expect(className).toContain('w-full')
+  })
+
+  it('orders header region, filter-row skeleton, and main content top-to-bottom in connected states', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: { items: [], total: 0 },
+    }
+
+    await renderWithRouter('/portfolio')
+
+    const content = document.querySelector('[data-slot="portfolio-content"]')
+    expect(content).toBeInTheDocument()
+
+    const children = Array.from(content?.children ?? [])
+    const headerIdx = children.findIndex(
+      (el) => el.getAttribute('data-slot') === 'portfolio-header-region',
+    )
+    const filterIdx = children.findIndex(
+      (el) => el.getAttribute('data-slot') === 'filter-row-skeleton',
+    )
+    const sectionIdx = children.findIndex(
+      (el) => el.getAttribute('aria-label') === 'Token list',
+    )
+
+    expect(headerIdx).toBeGreaterThanOrEqual(0)
+    expect(filterIdx).toBeGreaterThan(headerIdx)
+    expect(sectionIdx).toBeGreaterThan(filterIdx)
+  })
+
+  it('renders BreakdownCardSkeleton interior as Skeleton blocks only (no live legend symbols)', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: { items: [], total: 0 },
+    }
+
+    await renderWithRouter('/portfolio')
+
+    const breakdown = document.querySelector(
+      '[data-slot="breakdown-card-skeleton"]',
+    )
+    expect(breakdown).toBeInTheDocument()
+
+    const skeletons =
+      breakdown?.querySelectorAll('[data-slot="skeleton"]') ?? []
+    expect(skeletons.length).toBeGreaterThanOrEqual(19)
+
+    expect(breakdown?.querySelector('svg')).toBeNull()
+    expect(breakdown?.textContent).toBe('')
+  })
+
+  it('renders FilterRowSkeleton interior as Skeleton blocks only and wraps to a column on mobile', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: { items: [], total: 0 },
+    }
+
+    await renderWithRouter('/portfolio')
+
+    const filterRow = document.querySelector(
+      '[data-slot="filter-row-skeleton"]',
+    )
+    expect(filterRow).toBeInTheDocument()
+
+    const className = filterRow?.className ?? ''
+    expect(className).toContain('flex')
+    expect(className).toContain('flex-col')
+    expect(className).toContain('lg:flex-row')
+    expect(className).toContain('lg:items-center')
+    expect(className).toContain('lg:justify-between')
+    expect(className).toContain('w-full')
+
+    expect(filterRow?.querySelector('input')).toBeNull()
+    expect(filterRow?.querySelector('button')).toBeNull()
+    expect(filterRow?.querySelector('[role="switch"]')).toBeNull()
+    expect(filterRow?.textContent).toBe('')
+
+    const skeletons =
+      filterRow?.querySelectorAll('[data-slot="skeleton"]') ?? []
+    expect(skeletons.length).toBeGreaterThanOrEqual(3)
   })
 })
