@@ -6,7 +6,7 @@ type TokenRowProps = { asset: PortfolioAsset }
 
 export function TokenRow({ asset }: TokenRowProps) {
   return (
-    <TableRow className="flex w-full items-center justify-between px-5 py-4">
+    <TableRow className="flex w-full items-center justify-between border-b-0 px-5 py-4 hover:bg-transparent">
       <TableCell className="flex-1 min-w-0 p-0 text-left">
         <div className="flex items-center gap-2">
           {asset.imageUrl !== null ? (

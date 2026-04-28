@@ -79,7 +79,7 @@ describe('/portfolio route', () => {
     expect(skeletons.length).toBeGreaterThanOrEqual(2)
     // Table skeleton renders expected column headers
     expect(
-      screen.getByRole('columnheader', { name: 'Token' }),
+      screen.getByRole('columnheader', { name: /Asset/i }),
     ).toBeInTheDocument()
     // Screen reader loading announcement
     expect(screen.getByRole('status')).toHaveTextContent(/loading portfolio/i)
