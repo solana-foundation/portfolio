@@ -46,7 +46,7 @@ function PortfolioPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-6 lg:flex-row">
-        <PortfolioHeader assetCount={data?.total} isPending={isPending} />
+        <PortfolioHeader isPending={isPending} />
         {/* Issue #8 chart sits as a sibling in this flex row */}
       </div>
 

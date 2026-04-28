@@ -71,7 +71,7 @@ describe('/portfolio route', () => {
 
     const tableRegion = screen.getByRole('region', { name: /token list/i })
     expect(tableRegion).toHaveAttribute('aria-busy', 'true')
-    expect(screen.queryByText('SOL')).not.toBeInTheDocument()
+    expect(within(tableRegion).queryByText('SOL')).not.toBeInTheDocument()
     // Header skeleton renders (no "Net Worth" text)
     expect(screen.queryByText(/net worth/i)).not.toBeInTheDocument()
     // Skeletons are present in both header and table regions
@@ -113,9 +113,9 @@ describe('/portfolio route', () => {
     await renderWithRouter('/portfolio')
 
     expect(screen.getByText(/net worth/i)).toBeInTheDocument()
-    expect(screen.getByText('0 assets')).toBeInTheDocument()
     expect(screen.getByText(/no tokens/i)).toBeInTheDocument()
-    expect(screen.queryByText('SOL')).not.toBeInTheDocument()
+    const tableRegion = screen.getByRole('region', { name: /token list/i })
+    expect(within(tableRegion).queryByText('SOL')).not.toBeInTheDocument()
   })
 
   it('renders the header and token rows when the wallet has assets', async () => {
@@ -150,8 +150,8 @@ describe('/portfolio route', () => {
     await renderWithRouter('/portfolio')
 
     expect(screen.getByText(/net worth/i)).toBeInTheDocument()
-    expect(screen.getByText('2 assets')).toBeInTheDocument()
-    expect(screen.getByText('SOL')).toBeInTheDocument()
-    expect(screen.getByText('USDC')).toBeInTheDocument()
+    const tableRegion = screen.getByRole('region', { name: /token list/i })
+    expect(within(tableRegion).getByText('SOL')).toBeInTheDocument()
+    expect(within(tableRegion).getByText('USDC')).toBeInTheDocument()
   })
 })
