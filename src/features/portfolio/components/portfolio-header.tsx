@@ -27,9 +27,10 @@ export function PortfolioHeader({
 
   return (
     <Card
+      data-slot="portfolio-header"
       style={NET_WORTH_CARD_BACKGROUND}
       className={cn(
-        'w-full max-w-[370px] gap-10 rounded-medium border border-border bg-transparent p-6 ring-0',
+        'w-full max-w-[370px] gap-10 !rounded-medium border border-border bg-transparent p-6 ring-0',
         'lg:w-[560px] lg:max-w-none',
       )}
     >

@@ -71,11 +71,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* wallet-ui dropdown positioner has no z-index — page content overlays it */
-[data-wu="base-dropdown-wrapper"] {
-  z-index: 50;
-}
-
 @layer base {
   :root {
     /* Brand tokens — light */

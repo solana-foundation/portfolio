@@ -84,4 +84,20 @@ describe('PortfolioHeader', () => {
     expect(skeletons.length).toBeGreaterThanOrEqual(5)
     expect(screen.queryByText('Net Worth')).not.toBeInTheDocument()
   })
+
+  it('exposes the data-slot anchor for the populated card', () => {
+    render(<PortfolioHeader isPending={false} />)
+
+    expect(
+      document.querySelector('[data-slot="portfolio-header"]'),
+    ).toBeInTheDocument()
+  })
+
+  it('exposes the data-slot anchor for the skeleton card', () => {
+    render(<PortfolioHeader isPending={true} />)
+
+    expect(
+      document.querySelector('[data-slot="portfolio-header-skeleton"]'),
+    ).toBeInTheDocument()
+  })
 })

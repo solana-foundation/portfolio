@@ -59,7 +59,7 @@ function RootLayout() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 [&_[data-wu='base-dropdown-wrapper']]:!z-50">
             <button
               type="button"
               className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:text-foreground md:hidden"

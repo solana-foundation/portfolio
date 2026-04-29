@@ -9,7 +9,7 @@ export function BreakdownCardSkeleton() {
     <Card
       data-slot="breakdown-card-skeleton"
       className={cn(
-        'flex w-full min-w-0 flex-col items-start justify-between gap-10 rounded-medium border border-border bg-background p-6 ring-0',
+        'flex w-full min-w-0 flex-col items-start justify-between gap-10 !rounded-medium border border-border bg-background p-6 ring-0',
         'lg:flex-1',
         'xl:h-[250px] xl:gap-0',
       )}

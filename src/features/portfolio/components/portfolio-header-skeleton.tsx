@@ -10,9 +10,10 @@ const NET_WORTH_CARD_BACKGROUND: React.CSSProperties = {
 export function PortfolioHeaderSkeleton() {
   return (
     <Card
+      data-slot="portfolio-header-skeleton"
       style={NET_WORTH_CARD_BACKGROUND}
       className={cn(
-        'w-full max-w-[370px] gap-10 rounded-medium border border-border bg-transparent p-6 ring-0',
+        'w-full max-w-[370px] gap-10 !rounded-medium border border-border bg-transparent p-6 ring-0',
         'lg:w-[560px] lg:max-w-none',
       )}
     >
