@@ -1,7 +1,9 @@
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
 import { Menu, X } from 'lucide-react'
 import { lazy, Suspense, useState } from 'react'
-import { WalletUiDropdown } from '@/features/wallet'
+import logoUrl from '@/assets/logo-wordmark.svg'
+import { WalletButton } from '@/features/wallet'
+import { cn } from '@/lib/utils'
 
 const TanStackRouterDevtools = import.meta.env.DEV
   ? lazy(() =>
@@ -13,9 +15,12 @@ const TanStackRouterDevtools = import.meta.env.DEV
 
 const navLinks = [
   { to: '/portfolio', label: 'Portfolio' },
-  { to: '/transactions', label: 'Transactions' },
   { to: '/swap', label: 'Swap' },
+  { to: '/transactions', label: 'Activity' },
 ] as const
+
+const NAV_LINK_BASE =
+  'flex h-full items-center justify-center px-2.5 text-base text-muted-foreground transition-colors hover:text-foreground [&.active]:font-medium [&.active]:text-foreground'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -28,23 +33,31 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <Link to="/" className="text-lg font-bold">
-            Solana Portfolio
-          </Link>
+      <header>
+        <div className="flex h-[57px] w-full items-center justify-between overflow-clip border-b border-border px-8 py-2">
+          <div className="flex h-full items-center gap-10">
+            <Link
+              to="/portfolio"
+              className="flex h-full items-center"
+              aria-label="Solana Portfolio"
+            >
+              <img
+                src={logoUrl}
+                alt="Solana Portfolio"
+                width={109}
+                height={22}
+                className="h-[22px] w-[109px]"
+              />
+            </Link>
 
-          <nav className="hidden items-center gap-6 md:flex">
-            {navLinks.map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                className="text-sm text-muted-foreground hover:text-foreground [&.active]:text-foreground"
-              >
-                {label}
-              </Link>
-            ))}
-          </nav>
+            <nav className="hidden h-full items-center gap-6 md:flex">
+              {navLinks.map(({ to, label }) => (
+                <Link key={to} to={to} className={NAV_LINK_BASE}>
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
           <div className="flex items-center gap-2">
             <button
@@ -60,17 +73,20 @@ function RootLayout() {
                 <Menu className="h-5 w-5" />
               )}
             </button>
-            <WalletUiDropdown />
+            <WalletButton />
           </div>
         </div>
 
         {navOpen && (
-          <nav className="border-t border-border px-4 py-2 md:hidden">
+          <nav className="border-b border-border px-4 py-2 md:hidden">
             {navLinks.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
-                className="block py-2 text-sm text-muted-foreground hover:text-foreground [&.active]:text-foreground"
+                className={cn(
+                  'block py-2 text-sm text-muted-foreground hover:text-foreground',
+                  '[&.active]:font-medium [&.active]:text-foreground',
+                )}
                 onClick={() => setNavOpen(false)}
               >
                 {label}
@@ -112,7 +128,7 @@ function NotFound() {
         The page you're looking for doesn't exist.
       </p>
       <Link
-        to="/"
+        to="/portfolio"
         className="mt-4 inline-block text-primary hover:text-primary/80"
       >
         Go home

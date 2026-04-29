@@ -28,17 +28,54 @@ vi.mock('@/routes/index', async () => {
 })
 
 describe('Root layout', () => {
-  it('renders nav links', async () => {
+  it('renders nav links in the redesigned order', async () => {
     await renderWithRouter('/')
 
-    expect(screen.getByRole('link', { name: 'Portfolio' })).toBeInTheDocument()
+    const header = screen.getByRole('banner')
+    const navLinks = within(header).getAllByRole('link', {
+      name: /^(Portfolio|Swap|Activity)$/,
+    })
+
+    expect(navLinks.map((link) => link.textContent)).toEqual([
+      'Portfolio',
+      'Swap',
+      'Activity',
+    ])
     expect(
-      screen.getByRole('link', { name: 'Transactions' }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Swap' })).toBeInTheDocument()
-    expect(
-      screen.queryByRole('link', { name: 'Dashboard' }),
+      within(header).queryByRole('link', { name: 'Transactions' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('keeps the route path /transactions for the Activity link', async () => {
+    await renderWithRouter('/')
+
+    const header = screen.getByRole('banner')
+    const activityLinks = within(header).getAllByRole('link', {
+      name: 'Activity',
+    })
+    for (const link of activityLinks) {
+      expect(link).toHaveAttribute('href', '/transactions')
+    }
+  })
+
+  it('points the brand wordmark to /portfolio', async () => {
+    await renderWithRouter('/')
+
+    const header = screen.getByRole('banner')
+    const brandLink = within(header).getByRole('link', {
+      name: /Solana Portfolio/i,
+    })
+    expect(brandLink).toHaveAttribute('href', '/portfolio')
+  })
+
+  it('renders the wordmark image with the expected dimensions', async () => {
+    await renderWithRouter('/')
+
+    const header = screen.getByRole('banner')
+    const logo = within(header).getByAltText('Solana Portfolio')
+    expect(logo.tagName).toBe('IMG')
+    expect(logo).toHaveAttribute('width', '109')
+    expect(logo).toHaveAttribute('height', '22')
   })
 
   it('renders a wallet connection button in the header', async () => {
