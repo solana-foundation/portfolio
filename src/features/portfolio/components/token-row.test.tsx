@@ -1,17 +1,23 @@
-import type { Address } from '@solana/kit'
+import { address } from '@solana/kit'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { createSplAssetId } from '../asset-identity'
+import { SPL_TOKEN_PROGRAM_ID } from '../solana-constants'
 import type { PortfolioAsset } from '../types'
 import { TokenRow } from './token-row'
 
+const USDC_MINT = address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+
 const BASE_ASSET: PortfolioAsset = {
-  mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' as Address,
+  kind: 'spl-token',
+  id: createSplAssetId(SPL_TOKEN_PROGRAM_ID, USDC_MINT),
+  mint: USDC_MINT,
+  tokenProgram: SPL_TOKEN_PROGRAM_ID,
   symbol: 'USDC',
   name: 'USD Coin',
   imageUrl: 'https://example.com/usdc.png',
   rawBalance: 1_500_000n,
   decimals: 6,
-  kind: 'spl-token',
 }
 
 function renderRow(asset: PortfolioAsset) {

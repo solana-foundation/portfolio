@@ -1,27 +1,33 @@
-import type { Address } from '@solana/kit'
+import { address } from '@solana/kit'
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { createNativeAssetId, createSplAssetId } from '../asset-identity'
+import { SPL_TOKEN_PROGRAM_ID } from '../solana-constants'
 import type { PortfolioAsset } from '../types'
 import { TokenListModal } from './token-list-modal'
 
+const USDC_MINT = address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+
 const SOL: PortfolioAsset = {
-  mint: 'So11111111111111111111111111111111111111112' as Address,
+  kind: 'native',
+  id: createNativeAssetId(),
   symbol: 'SOL',
   name: 'Solana',
   imageUrl: 'https://example.com/sol.png',
   rawBalance: 2_000_000_000n,
   decimals: 9,
-  kind: 'native',
 }
 
 const USDC: PortfolioAsset = {
-  mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' as Address,
+  kind: 'spl-token',
+  id: createSplAssetId(SPL_TOKEN_PROGRAM_ID, USDC_MINT),
+  mint: USDC_MINT,
+  tokenProgram: SPL_TOKEN_PROGRAM_ID,
   symbol: 'USDC',
   name: 'USD Coin',
   imageUrl: 'https://example.com/usdc.png',
   rawBalance: 1_500_000n,
   decimals: 6,
-  kind: 'spl-token',
 }
 
 describe('TokenListModal', () => {

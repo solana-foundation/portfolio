@@ -36,7 +36,7 @@ export function TokenListModal({
         </DialogHeader>
         <ul className="flex w-full flex-col gap-3">
           {items.map((asset) => (
-            <li key={asset.mint}>
+            <li key={asset.id}>
               <TokenListModalRow asset={asset} />
             </li>
           ))}

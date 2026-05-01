@@ -1,19 +1,27 @@
-import type { Address } from '@solana/kit'
+import { address } from '@solana/kit'
 import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import type { PortfolioAsset } from '../types'
+import { createSplAssetId } from '../asset-identity'
+import { SPL_TOKEN_PROGRAM_ID } from '../solana-constants'
+import type { SplPortfolioAsset } from '../types'
 import { TokenTable } from './token-table'
 import { TokenTableSkeleton } from './token-table-skeleton'
 
-function makeAsset(overrides: Partial<PortfolioAsset> = {}): PortfolioAsset {
+function makeAsset(
+  overrides: Partial<SplPortfolioAsset> = {},
+): SplPortfolioAsset {
+  const mint =
+    overrides.mint ?? address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
   return {
-    mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' as Address,
+    kind: 'spl-token',
+    id: createSplAssetId(SPL_TOKEN_PROGRAM_ID, mint),
+    mint,
+    tokenProgram: SPL_TOKEN_PROGRAM_ID,
     symbol: 'USDC',
     name: 'USD Coin',
     imageUrl: 'https://example.com/usdc.png',
     rawBalance: 1_000_000n,
     decimals: 6,
-    kind: 'spl-token',
     ...overrides,
   }
 }
@@ -73,17 +81,17 @@ describe('TokenTable', () => {
   it('renders N body rows given N assets', () => {
     const assets = [
       makeAsset({
-        mint: 'So11111111111111111111111111111111111111112' as Address,
+        mint: address('So11111111111111111111111111111111111111112'),
         symbol: 'SOL',
         name: 'Solana',
       }),
       makeAsset({
-        mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' as Address,
+        mint: address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
         symbol: 'USDC',
         name: 'USD Coin',
       }),
       makeAsset({
-        mint: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj' as Address,
+        mint: address('7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj'),
         symbol: 'STSOL',
         name: 'Lido Staked SOL',
       }),
@@ -99,7 +107,7 @@ describe('TokenTable', () => {
   it('neutralizes shadcn body-row divider and hover background', () => {
     const assets = [
       makeAsset({
-        mint: 'So11111111111111111111111111111111111111112' as Address,
+        mint: address('So11111111111111111111111111111111111111112'),
         symbol: 'SOL',
         name: 'Solana',
       }),

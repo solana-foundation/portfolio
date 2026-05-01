@@ -61,7 +61,7 @@ export function TokenTable({ assets }: TokenTableProps) {
         </TableHeader>
         <TableBody>
           {assets.map((asset) => (
-            <TokenRow key={asset.mint} asset={asset} />
+            <TokenRow key={asset.id} asset={asset} />
           ))}
         </TableBody>
       </Table>

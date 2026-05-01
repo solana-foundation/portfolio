@@ -4,7 +4,14 @@ export { das } from './das-plugin'
 export { formatBalance } from './format'
 export { normalizeDasResponse } from './normalize'
 export { createPortfolioQueryClient, portfolioKeys } from './query-client'
-export type { PortfolioAsset, PortfolioAssetList } from './types'
+export type {
+  NativePortfolioAsset,
+  PortfolioAsset,
+  PortfolioAssetId,
+  PortfolioAssetList,
+  SplPortfolioAsset,
+  TokenProgramId,
+} from './types'
 export {
   portfolioAssetsQueryOptions,
   usePortfolioAssets,

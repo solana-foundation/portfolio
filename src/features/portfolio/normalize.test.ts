@@ -1,22 +1,29 @@
-import { describe, expect, it, vi } from 'vitest'
+import { address } from '@solana/kit'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   dasEmptyResponse,
   dasGetAssetsByOwnerResponse,
+  dasNativeAndWrappedSolResponse,
   dasZeroNativeBalanceResponse,
   emptyMetadataItem,
   fungibleAssetItem,
+  fungibleMissingTokenProgramItem,
   fungibleTokenItem,
+  fungibleUnknownTokenProgramItem,
   nativeBalanceFixture,
   unknownTokenItem,
 } from '@/features/portfolio/__fixtures__/das-get-assets-by-owner'
+import {
+  createSplAssetId,
+  isSolanaNativeMint,
+} from '@/features/portfolio/asset-identity'
 import type { DasAsset, DasAssetList } from '@/features/portfolio/das-types'
 import { normalizeDasResponse } from '@/features/portfolio/normalize'
+import { SPL_TOKEN_PROGRAM_ID } from '@/features/portfolio/solana-constants'
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-const SOL_MINT = 'So11111111111111111111111111111111111111112'
 
 /** Build a minimal DasAssetList for edge-case tests. */
 function makeResponse(
@@ -32,12 +39,26 @@ function makeResponse(
   }
 }
 
-/** Build a minimal FungibleToken DasAsset. */
-function makeToken(overrides: Partial<DasAsset> & { id: string }): DasAsset {
+/**
+ * Build a minimal FungibleToken DasAsset. When `token_info` is supplied, the
+ * SPL Token Program id is merged in by default so callers don't have to
+ * thread it through every fixture; tests that need a different (or absent)
+ * `token_program` should overwrite it explicitly.
+ */
+function makeValidToken(
+  overrides: Partial<DasAsset> & { id: string },
+): DasAsset {
+  const { token_info, ...rest } = overrides
   return {
     interface: 'FungibleToken',
     ownership: { owner: '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV' },
-    ...overrides,
+    ...rest,
+    ...(token_info !== undefined && {
+      token_info: {
+        token_program: SPL_TOKEN_PROGRAM_ID,
+        ...token_info,
+      },
+    }),
   }
 }
 
@@ -82,7 +103,7 @@ describe('normalizeDasResponse', () => {
       expect(result.total).toBe(1)
 
       const sol = result.items[0]!
-      expect(sol.mint).toBe(SOL_MINT)
+      expect(sol.id).toBe('native:SOL')
       expect(sol.symbol).toBe('SOL')
       expect(sol.name).toBe('Solana')
       expect(sol.decimals).toBe(9)
@@ -181,7 +202,7 @@ describe('normalizeDasResponse', () => {
     })
 
     it('skips tokens where token_info.balance is missing', () => {
-      const noBalance: DasAsset = makeToken({
+      const noBalance: DasAsset = makeValidToken({
         id: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
         content: { metadata: { name: 'Lido Staked SOL', symbol: 'stSOL' } },
         token_info: { decimals: 9 },
@@ -195,7 +216,7 @@ describe('normalizeDasResponse', () => {
     })
 
     it('skips tokens where token_info.balance is zero (emptied account)', () => {
-      const zeroBalance: DasAsset = makeToken({
+      const zeroBalance: DasAsset = makeValidToken({
         id: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
         content: { metadata: { name: 'Lido Staked SOL', symbol: 'stSOL' } },
         token_info: { balance: 0n, decimals: 9 },
@@ -209,7 +230,7 @@ describe('normalizeDasResponse', () => {
     })
 
     it('skips tokens where token_info is entirely absent', () => {
-      const noTokenInfo: DasAsset = makeToken({
+      const noTokenInfo: DasAsset = makeValidToken({
         id: '7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj',
       })
       const response = makeResponse([noTokenInfo])
@@ -220,7 +241,7 @@ describe('normalizeDasResponse', () => {
     })
 
     it('passes token_info.balance bigint through to rawBalance', () => {
-      const token: DasAsset = makeToken({
+      const token: DasAsset = makeValidToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         token_info: { balance: 123_456_789n, decimals: 6 },
       })
@@ -238,7 +259,7 @@ describe('normalizeDasResponse', () => {
   describe('metadata fallback chains', () => {
     describe('symbol', () => {
       it('prefers token_info.symbol over content.metadata.symbol', () => {
-        const token: DasAsset = makeToken({
+        const token: DasAsset = makeValidToken({
           id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           content: { metadata: { symbol: 'MetadataSymbol' } },
           token_info: { symbol: 'TokenInfoSymbol', balance: 1n, decimals: 0 },
@@ -300,7 +321,7 @@ describe('normalizeDasResponse', () => {
       })
 
       it('falls back to files[0].uri when links.image is absent', () => {
-        const token: DasAsset = makeToken({
+        const token: DasAsset = makeValidToken({
           id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           content: {
             files: [{ uri: 'https://example.com/fallback.png' }],
@@ -344,7 +365,7 @@ describe('normalizeDasResponse', () => {
       })
 
       it('falls back to 0 when token_info.decimals is absent', () => {
-        const token: DasAsset = makeToken({
+        const token: DasAsset = makeValidToken({
           id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
           token_info: { balance: 100n },
         })
@@ -362,7 +383,7 @@ describe('normalizeDasResponse', () => {
   // -----------------------------------------------------------------------
   describe('error handling', () => {
     it('handles token with content explicitly set to null', () => {
-      const token: DasAsset = makeToken({
+      const token: DasAsset = makeValidToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         content: null,
         token_info: { balance: 500n, decimals: 2 },
@@ -398,11 +419,11 @@ describe('normalizeDasResponse', () => {
     it('skips assets with invalid base58 address and warns', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
-      const invalid: DasAsset = makeToken({
+      const invalid: DasAsset = makeValidToken({
         id: '!!not-valid-base58!!',
         token_info: { balance: 100n, decimals: 0 },
       })
-      const valid: DasAsset = makeToken({
+      const valid: DasAsset = makeValidToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         token_info: { balance: 200n, decimals: 6 },
       })
@@ -441,11 +462,11 @@ describe('normalizeDasResponse', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       const response = makeResponse([
-        makeToken({
+        makeValidToken({
           id: '!!invalid1!!',
           token_info: { balance: 1n, decimals: 0 },
         }),
-        makeToken({
+        makeValidToken({
           id: '!!invalid2!!',
           token_info: { balance: 2n, decimals: 0 },
         }),
@@ -483,18 +504,22 @@ describe('normalizeDasResponse', () => {
       )
 
       expect(result.items[0]!.kind).toBe('native')
-      expect(result.items[0]!.mint).toBe(SOL_MINT)
+      expect(result.items[0]!.id).toBe('native:SOL')
 
       // SPL tokens follow in their original fixture order: USDC, mSOL, unknown
-      expect(result.items[1]!.mint).toBe(
-        'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-      )
-      expect(result.items[2]!.mint).toBe(
-        'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
-      )
-      expect(result.items[3]!.mint).toBe(
-        'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263',
-      )
+      const usdc = result.items[1]!
+      const msol = result.items[2]!
+      const unknown = result.items[3]!
+      if (
+        usdc.kind !== 'spl-token' ||
+        msol.kind !== 'spl-token' ||
+        unknown.kind !== 'spl-token'
+      ) {
+        throw new Error('expected spl-token assets in tail of result.items')
+      }
+      expect(usdc.mint).toBe('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+      expect(msol.mint).toBe('mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So')
+      expect(unknown.mint).toBe('DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263')
     })
 
     it('total reflects actual count after filtering, not the DAS total', () => {
@@ -509,7 +534,7 @@ describe('normalizeDasResponse', () => {
     })
 
     it('preserves SPL token order after filtering (no re-sorting)', () => {
-      const tokenA: DasAsset = makeToken({
+      const tokenA: DasAsset = makeValidToken({
         id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
         token_info: { balance: 1n, decimals: 0, symbol: 'A' },
       })
@@ -518,7 +543,7 @@ describe('normalizeDasResponse', () => {
         id: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
         ownership: { owner: 'test' },
       }
-      const tokenB: DasAsset = makeToken({
+      const tokenB: DasAsset = makeValidToken({
         id: 'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So',
         token_info: { balance: 2n, decimals: 0, symbol: 'B' },
       })
@@ -564,6 +589,95 @@ describe('normalizeDasResponse', () => {
       expect(unknown.rawBalance).toBe(9_314_309_076_870_502_293n)
       expect(unknown.decimals).toBe(5)
       expect(unknown.imageUrl).toBeNull()
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // Asset identity
+  // -----------------------------------------------------------------------
+  describe('asset identity', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('builds the native row with id "native:SOL" and no mint or tokenProgram', () => {
+      const response = makeResponse([], { nativeBalance: nativeBalanceFixture })
+
+      const result = normalizeDasResponse(response)
+
+      const sol = result.items[0]!
+      expect(sol.kind).toBe('native')
+      expect(sol.id).toBe('native:SOL')
+      expect('mint' in sol).toBe(false)
+      expect('tokenProgram' in sol).toBe(false)
+    })
+
+    it('builds the SPL row with the helper-derived id and validated tokenProgram', () => {
+      const response = makeResponse([fungibleTokenItem as DasAsset])
+
+      const result = normalizeDasResponse(response)
+
+      const usdc = result.items[0]!
+      if (usdc.kind !== 'spl-token') {
+        throw new Error('expected spl-token asset')
+      }
+      expect(usdc.tokenProgram).toBe(SPL_TOKEN_PROGRAM_ID)
+      expect(usdc.id).toBe(
+        createSplAssetId(SPL_TOKEN_PROGRAM_ID, address(fungibleTokenItem.id)),
+      )
+    })
+
+    it('lets isSolanaNativeMint classify the wSOL row after narrowing', () => {
+      const result = normalizeDasResponse(
+        dasNativeAndWrappedSolResponse as DasAssetList,
+      )
+
+      const wsol = result.items[1]!
+      if (wsol.kind !== 'spl-token') {
+        throw new Error('expected spl-token wSOL row')
+      }
+      expect(isSolanaNativeMint(wsol.tokenProgram, wsol.mint)).toBe(true)
+    })
+
+    it('produces distinct ids for native SOL and wSOL on the collision response (native first)', () => {
+      const result = normalizeDasResponse(
+        dasNativeAndWrappedSolResponse as DasAssetList,
+      )
+
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0]!.kind).toBe('native')
+      expect(result.items[1]!.kind).toBe('spl-token')
+      expect(result.items[0]!.id).not.toBe(result.items[1]!.id)
+    })
+
+    it('warns and skips a positive-balance fungible whose token_program is missing', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const response = makeResponse([
+        fungibleMissingTokenProgramItem as DasAsset,
+      ])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items).toHaveLength(0)
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+      const [message] = warnSpy.mock.calls[0]!
+      expect(String(message)).toContain(fungibleMissingTokenProgramItem.id)
+    })
+
+    it('warns and skips a positive-balance fungible whose token_program is unsupported', () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      const response = makeResponse([
+        fungibleUnknownTokenProgramItem as DasAsset,
+      ])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items).toHaveLength(0)
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+      const [message] = warnSpy.mock.calls[0]!
+      expect(String(message)).toContain(fungibleUnknownTokenProgramItem.id)
     })
   })
 })

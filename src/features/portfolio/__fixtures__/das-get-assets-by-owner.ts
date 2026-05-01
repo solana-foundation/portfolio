@@ -375,6 +375,45 @@ export const dasGetAssetsByOwnerResponse = {
 }
 
 /**
+ * Synthetic display fixture exercising the native + wSOL collision: the
+ * wallet holds both native SOL and the wrapped-SOL SPL token, which share
+ * the canonical `So11...112` mint and (per Metaplex convention) the symbol
+ * 'SOL'. Visual disambiguation in the route-level test is by row count and
+ * a duplicate-key spy, not by distinct symbol text.
+ */
+export const dasNativeAndWrappedSolResponse = {
+  total: 1,
+  limit: 1000,
+  page: 1,
+  items: [
+    {
+      interface: 'FungibleToken',
+      id: 'So11111111111111111111111111111111111111112',
+      content: {
+        metadata: {
+          name: 'Wrapped SOL',
+          symbol: 'SOL',
+        },
+      },
+      ownership: {
+        owner: FIXTURE_OWNER,
+      },
+      token_info: {
+        symbol: 'SOL',
+        balance: 1_500_000_000n,
+        decimals: 9,
+        token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+      },
+    },
+  ],
+  nativeBalance: {
+    lamports: 2_000_000_000n,
+    price_per_sol: 82.0,
+    total_price: 164.0,
+  },
+}
+
+/**
  * Empty portfolio — no items, no native balance.
  */
 export const dasEmptyResponse = {
@@ -400,6 +439,55 @@ export const dasZeroNativeBalanceResponse = {
 }
 
 /**
+ * Positive-balance fungible whose token_info omits `token_program`.
+ * Drives the malformed-input path: the normalizer must throw after the
+ * balance check and the existing per-asset try/catch must warn-and-skip.
+ *
+ * Not added to dasGetAssetsByOwnerResponse — it is consumed only by the
+ * malformed-input normalizer test in isolation.
+ */
+export const fungibleMissingTokenProgramItem = {
+  interface: 'FungibleToken',
+  id: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB',
+  content: {
+    metadata: { name: 'Missing Program Token', symbol: 'MISS' },
+  },
+  token_info: {
+    balance: 1_000n,
+    decimals: 6,
+    // token_program intentionally omitted to exercise the malformed-input branch
+  },
+  ownership: {
+    owner: FIXTURE_OWNER,
+  },
+}
+
+/**
+ * Positive-balance fungible whose token_info carries a syntactically valid
+ * but unsupported `token_program` (the Memo Program). Same malformed-input
+ * shape as the missing case but exercises the unknown-program branch
+ * separately.
+ *
+ * Not added to dasGetAssetsByOwnerResponse — consumed only by its dedicated
+ * malformed-input test in isolation.
+ */
+export const fungibleUnknownTokenProgramItem = {
+  interface: 'FungibleToken',
+  id: 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn',
+  content: {
+    metadata: { name: 'Unknown Program Token', symbol: 'UNK' },
+  },
+  token_info: {
+    balance: 2_000n,
+    decimals: 9,
+    token_program: 'MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr',
+  },
+  ownership: {
+    owner: FIXTURE_OWNER,
+  },
+}
+
+/**
  * Fungible asset with content present but inner metadata/files/links objects
  * all empty. Observed in live DAS responses for some FungibleAssets — the
  * normalizer must fall back to the truncated address rather than surface
@@ -416,6 +504,7 @@ export const emptyMetadataItem = {
   token_info: {
     balance: 1000n,
     decimals: 6,
+    token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
   },
   ownership: {
     owner: FIXTURE_OWNER,

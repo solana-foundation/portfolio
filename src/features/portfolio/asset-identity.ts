@@ -19,9 +19,10 @@ export function isSolanaNativeMint(
   tokenProgram: TokenProgramId,
   mint: Address,
 ): boolean {
-  return tokenProgram === SPL_TOKEN_PROGRAM_ID
-    ? mint === WRAPPED_SOL_MINT
-    : mint === WRAPPED_SOL_MINT_2022
+  return (
+    (tokenProgram === SPL_TOKEN_PROGRAM_ID && mint === WRAPPED_SOL_MINT) ||
+    (tokenProgram === TOKEN_2022_PROGRAM_ID && mint === WRAPPED_SOL_MINT_2022)
+  )
 }
 
 export function createNativeAssetId(): PortfolioAssetId {
