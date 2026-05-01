@@ -1,5 +1,18 @@
 import type { Address } from '@solana/kit'
 
+export type PortfolioAssetId = string
+
+/**
+ * The two SPL token program addresses recognized by the portfolio feature:
+ * the original Token Program and Token-2022. The string-literal union is
+ * hardcoded here so `types.ts` has no value-level imports from feature
+ * modules; the constants in `solana-constants.ts` assert conformance via
+ * `satisfies TokenProgramId`.
+ */
+export type TokenProgramId =
+  | 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+  | 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb'
+
 /**
  * Normalized asset model representing a token in the user's portfolio.
  */
