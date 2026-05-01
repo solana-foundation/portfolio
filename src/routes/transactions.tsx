@@ -1,5 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { EmptyState } from '@/components/empty-state'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from '@/components/ui/empty'
 
 export const Route = createFileRoute('/transactions')({
   component: TransactionsPage,
@@ -7,14 +13,14 @@ export const Route = createFileRoute('/transactions')({
 
 function TransactionsPage() {
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Transactions</h1>
-      <div className="mt-6">
-        <EmptyState
-          title="No transactions"
-          description="Connect a wallet to view recent transaction history."
-        />
-      </div>
-    </div>
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>No transactions</EmptyTitle>
+        <EmptyDescription>
+          Connect a wallet to view recent transaction history.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent />
+    </Empty>
   )
 }

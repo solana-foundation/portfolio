@@ -8,7 +8,7 @@ import { render } from '@testing-library/react'
 import { SolanaProvider } from '@/features/wallet'
 import { routeTree } from '@/routeTree.gen'
 
-export async function renderWithRouter(initialUrl = '/'): Promise<void> {
+export async function renderWithRouter(initialUrl = '/') {
   const history = createMemoryHistory({ initialEntries: [initialUrl] })
   const router = createRouter({
     routeTree,
@@ -28,4 +28,6 @@ export async function renderWithRouter(initialUrl = '/'): Promise<void> {
       </SolanaProvider>
     </QueryClientProvider>,
   )
+
+  return { router }
 }
