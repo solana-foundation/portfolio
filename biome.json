@@ -9,6 +9,11 @@
     "includes": ["**", "!**/src/routeTree.gen.ts"]
   },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "linter": {
     "enabled": true,
     "rules": {
@@ -25,6 +30,12 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/src/components/ui/**"],
+      "formatter": { "enabled": false },
+      "linter": { "enabled": false },
+      "assist": { "actions": { "source": { "organizeImports": "off" } } }
     }
   ],
   "formatter": {

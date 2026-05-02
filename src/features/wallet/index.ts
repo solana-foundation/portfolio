@@ -2,6 +2,7 @@ export {
   useWalletUiAccount as useWallet,
   WalletUiDropdown,
 } from '@wallet-ui/react'
+export { WalletButton } from './components/wallet-button'
 export { SolanaProvider } from './providers'
 export { useClient, useRpc } from './rpc-context'
 

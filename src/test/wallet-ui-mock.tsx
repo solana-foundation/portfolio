@@ -38,6 +38,33 @@ export function createWalletUiMock() {
       useRequireProvider('WalletUiDropdown')
       return <button type="button">Select Wallet</button>
     },
+    useWalletUiDropdown: () => {
+      useRequireProvider('useWalletUiDropdown')
+      return {
+        buttonProps: { label: 'Select Wallet' },
+        connected: false,
+        dropdown: { open: () => {}, close: () => {}, api: {} },
+        items: [],
+      }
+    },
+    BaseDropdown: ({
+      buttonProps,
+    }: {
+      buttonProps: {
+        label: ReactNode
+        className?: string
+        leftSection?: ReactNode
+        [key: `data-${string}`]: string | undefined
+      }
+    }) => {
+      const { label, leftSection, className, ...rest } = buttonProps
+      return (
+        <button type="button" className={className} {...rest}>
+          {leftSection}
+          {label}
+        </button>
+      )
+    },
     createWalletUiConfig: (props: unknown) => props,
     createSolanaDevnet: (url?: string) =>
       url ? { ...MOCK_CLUSTER, url } : MOCK_CLUSTER,
