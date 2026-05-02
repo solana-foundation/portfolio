@@ -492,10 +492,9 @@ describe('normalizeDasResponse', () => {
         dasGetAssetsByOwnerResponse as DasAssetList,
       )
 
-      // native SOL (lamports=2_500_000_000) + USDC + mSOL + unknown token = 4
-      // NFT filtered, no-balance token filtered
-      expect(result.total).toBe(4)
-      expect(result.items).toHaveLength(4)
+      // 1 native + 6 fungibles = 7; NFT and no-balance items filter out.
+      expect(result.total).toBe(7)
+      expect(result.items).toHaveLength(7)
     })
 
     it('places native SOL first, followed by SPL tokens in original DAS order', () => {
@@ -523,13 +522,13 @@ describe('normalizeDasResponse', () => {
     })
 
     it('total reflects actual count after filtering, not the DAS total', () => {
-      // DAS response says total: 5 but only 3 SPL tokens pass + 1 native = 4
+      // DAS response says total: 8 but only 6 SPL tokens pass + 1 native = 7
       const result = normalizeDasResponse(
         dasGetAssetsByOwnerResponse as DasAssetList,
       )
 
-      expect(dasGetAssetsByOwnerResponse.total).toBe(5)
-      expect(result.total).toBe(4)
+      expect(dasGetAssetsByOwnerResponse.total).toBe(8)
+      expect(result.total).toBe(7)
       expect(result.total).toBe(result.items.length)
     })
 

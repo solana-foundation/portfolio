@@ -1,13 +1,21 @@
 /**
- * Synthetic DAS `getAssetsByOwner` fixture.
+ * DAS `getAssetsByOwner` fixtures. Mixed-source: `fungibleTokenItem` and
+ * `impersonatorItem` are live-transcribed from Helius mainnet; everything
+ * else is synthetic with placeholder mints and `example.invalid` URLs. Each
+ * docstring marks its kind.
  *
- * This is a representative fixture assembled from verified live DAS API
- * responses (via a Helius provider) and cross-referenced against the Metaplex
- * DAS standard. Bigint literals are used wherever the current plugin
- * materializes integer-valued fields as `bigint` at runtime.
+ * Image-cascade branch: `fungibleTokenItem` (USDC) and `impersonatorItem`
+ * both land in the image-mime `cdn_uri` branch. Integration parity
+ * assertions depend on both rows resolving through the same branch.
  *
- * NOTE: No type imports from das-types.ts — this fixture is plain data.
- * Tests assign fixture data to typed variables to verify type correctness.
+ * To refresh live items, query Helius getAssetsByOwner on mainnet
+ * 5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9 and devnet
+ * BoTsCAFmRe35ghBXN18kBz6AdmEJYXwMzDUwZXr4Pa9R, plus getAsset on USDC
+ * (EPjFWdd5...), mainnet PYUSD (2b1kV6Dk...), and `Solana·`
+ * (JEDuhcjUgxtnpD48Cfcs3FKokRAN6y81GFRvVQiVEaLs).
+ *
+ * Bigint literals reflect runtime types. No das-types imports — tests
+ * type-check via assignment.
  */
 
 /** Owner wallet address used across the fixture */
@@ -340,6 +348,194 @@ export const noBalanceItem = {
   },
 }
 
+/**
+ * Synthetic defensive case. The mainnet probe (see file header for re-run
+ * details) found 46/46 fungibles with `files[]` had image/* mime; 2
+ * fungibles had no `files[]`; 0 no-mime file cases observed. So this branch
+ * is convention-based defense — the Metaplex "first file is the logo"
+ * convention — rather than an observed real-world shape. Standalone export,
+ * not in the integration response. If the cascade ever drops the no-mime
+ * branch, drop this fixture with it.
+ */
+export const fungibleTokenWithCdnNoMime = {
+  interface: 'FungibleToken',
+  id: 'GmAxym41jdMQ6WG92btzgfizva7gLKbCTQKu8bWFNzPm',
+  content: {
+    files: [
+      {
+        uri: 'https://example.invalid/no-mime/logo.png',
+        cdn_uri:
+          'https://cdn.helius-rpc.com/cdn-cgi/image//https://example.invalid/no-mime/logo.png',
+        // mime intentionally omitted — exercises the no-mime safety branch
+      },
+    ],
+    metadata: {
+      name: 'No-Mime Token',
+      symbol: 'NMT',
+    },
+  },
+  ownership: {
+    owner: FIXTURE_OWNER,
+  },
+  token_info: {
+    balance: 1_500_000n,
+    decimals: 6,
+    token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  },
+}
+
+/**
+ * Synthetic defensive case. Non-image mime in `files[]` plus `links.image` —
+ * asserts the cascade skips non-image files AND falls through to
+ * `links.image` (a single "skip" assertion alone could be passed by
+ * short-circuiting to `null`). Metaplex permits non-image media in
+ * `files[]`; the value here is preventing `<img src="…video.mp4">`-style
+ * mis-rendering. Standalone export, not in the integration response.
+ */
+export const fungibleTokenNonImageMime = {
+  interface: 'FungibleToken',
+  id: 'D4U95uqcHxx7sN6jmU8WdTkgK2dtHUDQhrMZthGPtDWJ',
+  content: {
+    files: [
+      {
+        uri: 'https://example.invalid/asset.bin',
+        cdn_uri:
+          'https://cdn.helius-rpc.com/cdn-cgi/image//https://example.invalid/asset.bin',
+        mime: 'application/octet-stream',
+      },
+    ],
+    metadata: {
+      name: 'Binary Blob Token',
+      symbol: 'BLOB',
+    },
+    links: {
+      image: 'https://example.invalid/blob/icon.png',
+    },
+  },
+  ownership: {
+    owner: FIXTURE_OWNER,
+  },
+  token_info: {
+    balance: 2_500_000n,
+    decimals: 6,
+    token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  },
+}
+
+/**
+ * Synthetic. `metadata.name` carries U+202E (right-to-left override). Escape
+ * form is intentional — pasted raw, the editor mirrors trailing text.
+ */
+export const fungibleTokenBidiName = {
+  interface: 'FungibleToken',
+  id: '39xw2rXMKoKtbxHAFeDReTixYSyZMxHbegDpPtyyy6oe',
+  content: {
+    metadata: {
+      name: 'Safe\u202EBidiToken',
+      symbol: 'BIDI',
+    },
+  },
+  ownership: {
+    owner: FIXTURE_OWNER,
+  },
+  token_info: {
+    balance: 1_000n,
+    decimals: 6,
+    token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  },
+}
+
+/** Synthetic. `metadata.name` exceeds the 60-character display cap. */
+export const fungibleTokenLongName = {
+  interface: 'FungibleToken',
+  id: '4ohXkT61ZXpHwQXJfPak4nCdZdnqm8oj3xp5ShLpJuxX',
+  content: {
+    metadata: {
+      name: 'This is an excessively verbose token name designed to overflow the sixty-character display cap',
+      symbol: 'LONG',
+    },
+  },
+  ownership: {
+    owner: FIXTURE_OWNER,
+  },
+  token_info: {
+    balance: 1_000n,
+    decimals: 6,
+    token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
+  },
+}
+
+/**
+ * Live-transcribed mainnet `Solana·` (U+00B7) Token-2022 impersonator.
+ * Balance, supply, and URLs preserved from `getAssetsByOwner`. Lands in the
+ * same image-mime `cdn_uri` cascade branch as `fungibleTokenItem`;
+ * integration tests assert that parity.
+ */
+export const impersonatorItem = {
+  interface: 'FungibleToken',
+  id: 'JEDuhcjUgxtnpD48Cfcs3FKokRAN6y81GFRvVQiVEaLs',
+  content: {
+    $schema: 'https://schema.metaplex.com/nft1.0.json',
+    json_uri:
+      'https://ipfs.io/ipfs/bafkreifrmdpc5uvno2bylt5m3urzpjysfumhqpg2fm2ofcufatxegp2nfq',
+    files: [
+      {
+        uri: 'https://ipfs.io/ipfs/bafkreieuhreooyhmof7vknrygudh2ua76s6wqjncs4zkdckv4fa3uu3gai',
+        cdn_uri:
+          'https://cdn.helius-rpc.com/cdn-cgi/image//https://ipfs.io/ipfs/bafkreieuhreooyhmof7vknrygudh2ua76s6wqjncs4zkdckv4fa3uu3gai',
+        mime: 'image/png',
+      },
+    ],
+    metadata: {
+      description: 'Solana',
+      name: 'Solana·',
+      symbol: '$SOL',
+    },
+    links: {
+      image:
+        'https://ipfs.io/ipfs/bafkreieuhreooyhmof7vknrygudh2ua76s6wqjncs4zkdckv4fa3uu3gai',
+    },
+  },
+  authorities: [],
+  compression: {
+    eligible: false,
+    compressed: false,
+    data_hash: '',
+    creator_hash: '',
+    asset_hash: '',
+    tree: '',
+    seq: 0n,
+    leaf_id: 0n,
+  },
+  grouping: [],
+  royalty: {
+    royalty_model: 'creators',
+    target: null,
+    percent: 0.0,
+    basis_points: 0n,
+    primary_sale_happened: false,
+    locked: false,
+  },
+  creators: [],
+  ownership: {
+    frozen: false,
+    delegated: false,
+    delegate: null,
+    ownership_model: 'token',
+    owner: FIXTURE_OWNER,
+  },
+  supply: null,
+  mutable: true,
+  burnt: false,
+  token_info: {
+    balance: 5_534_023_222_112_865_480n,
+    supply: 16_602_069_666_338_596_440n,
+    decimals: 6,
+    token_program: 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb',
+    associated_token_address: 'HQrDHKEdw1iNj8doU41F3zjKgcahrYGRPzmzU7twpCeW',
+  },
+}
+
 // ---------------------------------------------------------------------------
 // Native balance fixture. Shape verified from live API; values are
 // representative test data.
@@ -356,12 +552,14 @@ export const nativeBalanceFixture = {
 // ---------------------------------------------------------------------------
 
 /**
- * Realistic `getAssetsByOwner` response with mixed asset types and native balance.
- * Items include: USDC (FungibleToken), mSOL (FungibleAsset), NFT (V1_NFT),
- * unknown token (no content), token with no balance.
+ * Realistic `getAssetsByOwner` response with mixed asset types and native
+ * balance. Includes the impersonator and the bidi / long-name sanitization
+ * cases so route-level tests exercise them through the rendered table. The
+ * no-mime and non-image-mime defensive cases stay out of this response —
+ * they are standalone exports for targeted Phase 1 unit tests.
  */
 export const dasGetAssetsByOwnerResponse = {
-  total: 5,
+  total: 8,
   limit: 1000,
   page: 1,
   items: [
@@ -370,6 +568,9 @@ export const dasGetAssetsByOwnerResponse = {
     nftItem,
     unknownTokenItem,
     noBalanceItem,
+    fungibleTokenBidiName,
+    fungibleTokenLongName,
+    impersonatorItem,
   ],
   nativeBalance: nativeBalanceFixture,
 }
