@@ -1,8 +1,43 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef } from 'react'
+import type { DasRpc } from '@/features/portfolio/das-plugin'
 import { normalizeDasResponse } from '@/features/portfolio/normalize'
 import { portfolioKeys } from '@/features/portfolio/query-client'
 import { useClient, useWallet } from '@/features/wallet'
+
+type PortfolioAssetsQueryOptionsInput = {
+  address: string | undefined
+  clusterId: string
+  das: DasRpc
+}
+
+export function portfolioAssetsQueryOptions({
+  address,
+  clusterId,
+  das,
+}: PortfolioAssetsQueryOptionsInput) {
+  return queryOptions({
+    queryKey: portfolioKeys.assets(clusterId, address ?? ''),
+    queryFn: async ({ signal }) => {
+      if (!address) throw new Error('No wallet address')
+
+      const response = await das
+        .getAssetsByOwner({
+          ownerAddress: address,
+          page: 1,
+          limit: 100,
+          displayOptions: {
+            showFungible: true,
+            showNativeBalance: true,
+          },
+        })
+        .send({ abortSignal: signal })
+
+      return normalizeDasResponse(response)
+    },
+    enabled: !!address,
+  })
+}
 
 export function usePortfolioAssets() {
   const { account, cluster } = useWallet()
@@ -26,25 +61,5 @@ export function usePortfolioAssets() {
     prevRef.current = address ? { address, clusterId } : null
   }, [address, clusterId, queryClient])
 
-  return useQuery({
-    queryKey: portfolioKeys.assets(clusterId, address ?? ''),
-    queryFn: async ({ signal }) => {
-      if (!address) throw new Error('No wallet address')
-
-      const response = await das
-        .getAssetsByOwner({
-          ownerAddress: address,
-          page: 1,
-          limit: 100,
-          displayOptions: {
-            showFungible: true,
-            showNativeBalance: true,
-          },
-        })
-        .send({ abortSignal: signal })
-
-      return normalizeDasResponse(response)
-    },
-    enabled: !!address,
-  })
+  return useQuery(portfolioAssetsQueryOptions({ address, clusterId, das }))
 }

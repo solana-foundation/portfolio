@@ -5,6 +5,7 @@ import {
   useClient,
   useRpc,
   useWallet,
+  WalletButton,
   WalletUiDropdown,
 } from '@/features/wallet'
 
@@ -31,5 +32,9 @@ describe('wallet barrel export', () => {
 
   it('exports WalletUiDropdown as a function', () => {
     expect(typeof WalletUiDropdown).toBe('function')
+  })
+
+  it('exports WalletButton as a function', () => {
+    expect(typeof WalletButton).toBe('function')
   })
 })
