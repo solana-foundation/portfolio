@@ -4,7 +4,11 @@ import {
   createSplAssetId,
   parseTokenProgramId,
 } from '@/features/portfolio/asset-identity'
-import type { DasAsset, DasAssetList } from '@/features/portfolio/das-types'
+import type {
+  DasAsset,
+  DasAssetContent,
+  DasAssetList,
+} from '@/features/portfolio/das-types'
 import type {
   PortfolioAsset,
   PortfolioAssetList,
@@ -15,6 +19,29 @@ const FUNGIBLE_INTERFACES = new Set(['FungibleToken', 'FungibleAsset'])
 /** Truncate a base58 address to `XXXX...YYYY` for display fallbacks. */
 function truncateAddress(value: string): string {
   return `${value.slice(0, 4)}...${value.slice(-4)}`
+}
+
+/**
+ * Resolve the best image URL from a DAS asset's `content`. Cascade:
+ *
+ *   1. `files[]` entry with image-mime — `cdn_uri`
+ *   2. `links.image`
+ *   3. `files[]` entry with image-mime — `uri`
+ *   4. `null`
+ *
+ * Files without a `mime` field are treated as non-image and skipped — the
+ * stricter gate prevents `<img src="…video.mp4">`-style mis-rendering when
+ * Metaplex non-image media slips into `files[]`. A future trust-source
+ * override plugs in at this seam.
+ */
+function resolveImageUrl(content: DasAssetContent | undefined): string | null {
+  const imageFiles = content?.files?.filter((f) => f.mime?.startsWith('image/'))
+  return (
+    imageFiles?.find((f) => f.cdn_uri)?.cdn_uri ??
+    content?.links?.image ??
+    imageFiles?.find((f) => f.uri)?.uri ??
+    null
+  )
 }
 
 /**
@@ -44,12 +71,10 @@ function normalizeSplAsset(asset: DasAsset): PortfolioAsset | null {
 
   const content = asset.content ?? undefined
   const metadata = content?.metadata
-  const links = content?.links
-  const files = content?.files
 
   const symbol = tokenInfo.symbol ?? metadata?.symbol ?? truncated
   const name = metadata?.name ?? truncated
-  const imageUrl = links?.image ?? files?.[0]?.uri ?? null
+  const imageUrl = resolveImageUrl(content)
   const decimals = tokenInfo.decimals ?? 0
 
   return {

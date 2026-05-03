@@ -9,6 +9,7 @@ import {
   fungibleAssetItem,
   fungibleMissingTokenProgramItem,
   fungibleTokenItem,
+  fungibleTokenNonImageMime,
   fungibleUnknownTokenProgramItem,
   nativeBalanceFixture,
   unknownTokenItem,
@@ -309,52 +310,6 @@ describe('normalizeDasResponse', () => {
       })
     })
 
-    describe('image', () => {
-      it('uses content.links.image when available', () => {
-        const response = makeResponse([fungibleTokenItem as DasAsset])
-
-        const result = normalizeDasResponse(response)
-
-        expect(result.items[0]!.imageUrl).toBe(
-          'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
-        )
-      })
-
-      it('falls back to files[0].uri when links.image is absent', () => {
-        const token: DasAsset = makeValidToken({
-          id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
-          content: {
-            files: [{ uri: 'https://example.com/fallback.png' }],
-          },
-          token_info: { balance: 1n, decimals: 0 },
-        })
-        const response = makeResponse([token])
-
-        const result = normalizeDasResponse(response)
-
-        expect(result.items[0]!.imageUrl).toBe(
-          'https://example.com/fallback.png',
-        )
-      })
-
-      it('returns null when neither links.image nor files are available', () => {
-        const response = makeResponse([fungibleAssetItem as DasAsset])
-
-        const result = normalizeDasResponse(response)
-
-        // fungibleAssetItem has no links or files
-        expect(result.items[0]!.imageUrl).toBeNull()
-      })
-
-      it('returns null when content is entirely absent', () => {
-        const response = makeResponse([unknownTokenItem as DasAsset])
-
-        const result = normalizeDasResponse(response)
-
-        expect(result.items[0]!.imageUrl).toBeNull()
-      })
-    })
-
     describe('decimals', () => {
       it('uses token_info.decimals when available', () => {
         const response = makeResponse([fungibleTokenItem as DasAsset])
@@ -375,6 +330,157 @@ describe('normalizeDasResponse', () => {
 
         expect(result.items[0]!.decimals).toBe(0)
       })
+    })
+  })
+
+  // -----------------------------------------------------------------------
+  // Image cascade
+  // -----------------------------------------------------------------------
+  describe('image cascade', () => {
+    it('prefers cdn_uri of the first files[] entry whose mime starts with image/', () => {
+      const response = makeResponse([fungibleTokenItem as DasAsset])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBe(
+        'https://cdn.helius-rpc.com/cdn-cgi/image//https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/logo.png',
+      )
+    })
+
+    it('skips files[] entries with non-image mime and falls through to links.image', () => {
+      const response: DasAssetList = {
+        total: 1,
+        limit: 1000,
+        page: 1,
+        items: [fungibleTokenNonImageMime as DasAsset],
+      }
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBe(
+        'https://example.invalid/blob/icon.png',
+      )
+    })
+
+    it('treats files[] entries with absent mime as non-image and skips them', () => {
+      const token: DasAsset = makeValidToken({
+        id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        content: {
+          files: [
+            {
+              uri: 'https://example.com/no-mime.png',
+              cdn_uri: 'https://cdn.example.com/no-mime.png',
+            },
+          ],
+        },
+        token_info: { balance: 1n, decimals: 0 },
+      })
+      const response = makeResponse([token])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBeNull()
+    })
+
+    it('falls through to links.image when files is absent', () => {
+      const token: DasAsset = makeValidToken({
+        id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        content: {
+          links: { image: 'https://example.com/logo.png' },
+        },
+        token_info: { balance: 1n, decimals: 0 },
+      })
+      const response = makeResponse([token])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBe('https://example.com/logo.png')
+    })
+
+    it('falls through to image-mime files[].uri when cdn_uri is absent', () => {
+      const token: DasAsset = makeValidToken({
+        id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        content: {
+          files: [
+            { uri: 'https://example.com/fallback.png', mime: 'image/png' },
+          ],
+        },
+        token_info: { balance: 1n, decimals: 0 },
+      })
+      const response = makeResponse([token])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBe('https://example.com/fallback.png')
+    })
+
+    it('prefers any image-mime cdn_uri over links.image, even if files[0] lacks cdn_uri', () => {
+      // Metaplex permits multiple files; the cascade should consider every
+      // image-mime entry's cdn_uri before falling to links.image.
+      const token: DasAsset = makeValidToken({
+        id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        content: {
+          files: [
+            { uri: 'https://example.com/raw-first.png', mime: 'image/png' },
+            {
+              uri: 'https://example.com/raw-second.png',
+              cdn_uri: 'https://cdn.example.com/cdn-second.png',
+              mime: 'image/png',
+            },
+          ],
+          links: { image: 'https://example.com/links-image.png' },
+        },
+        token_info: { balance: 1n, decimals: 0 },
+      })
+      const response = makeResponse([token])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBe(
+        'https://cdn.example.com/cdn-second.png',
+      )
+    })
+
+    it('falls back to a later image-mime files[].uri when earlier image-mime entries have neither uri nor cdn_uri', () => {
+      const token: DasAsset = makeValidToken({
+        id: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+        content: {
+          files: [
+            { mime: 'image/png' },
+            { uri: 'https://example.com/second.png', mime: 'image/png' },
+          ],
+        },
+        token_info: { balance: 1n, decimals: 0 },
+      })
+      const response = makeResponse([token])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBe('https://example.com/second.png')
+    })
+
+    it('resolves to null when content is undefined', () => {
+      const response = makeResponse([unknownTokenItem as DasAsset])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBeNull()
+    })
+
+    it('resolves to null when content has neither files nor links', () => {
+      const response = makeResponse([fungibleAssetItem as DasAsset])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBeNull()
+    })
+
+    it('resolves to null when files and links are present but empty', () => {
+      const response = makeResponse([emptyMetadataItem as DasAsset])
+
+      const result = normalizeDasResponse(response)
+
+      expect(result.items[0]!.imageUrl).toBeNull()
     })
   })
 

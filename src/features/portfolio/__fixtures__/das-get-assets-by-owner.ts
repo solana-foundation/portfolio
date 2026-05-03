@@ -1,8 +1,13 @@
 /**
- * DAS `getAssetsByOwner` fixtures. Mixed-source: `fungibleTokenItem` and
- * `impersonatorItem` are live-transcribed from Helius mainnet; everything
- * else is synthetic with placeholder mints and `example.invalid` URLs. Each
- * docstring marks its kind.
+ * DAS `getAssetsByOwner` fixtures. Mixed-source:
+ * - `fungibleTokenItem` (USDC) and `impersonatorItem` are live-transcribed
+ *   from Helius mainnet, including their cdn_uri image URLs.
+ * - The remaining fixtures are synthetic. Mints range from real-on-chain
+ *   (mSoLzYC… is Marinade mSOL, DezXAZ8z… is BONK) to invented
+ *   (`GmAxym41…`, `D4U95uqc…`, `4ohXkT61…`, etc.); URLs are
+ *   `example.invalid` where present; balances and metadata are chosen to
+ *   exercise specific code paths, not from chain.
+ * Each docstring marks its kind.
  *
  * Image-cascade branch: `fungibleTokenItem` (USDC) and `impersonatorItem`
  * both land in the image-mime `cdn_uri` branch. Integration parity
@@ -349,42 +354,6 @@ export const noBalanceItem = {
 }
 
 /**
- * Synthetic defensive case. The mainnet probe (see file header for re-run
- * details) found 46/46 fungibles with `files[]` had image/* mime; 2
- * fungibles had no `files[]`; 0 no-mime file cases observed. So this branch
- * is convention-based defense — the Metaplex "first file is the logo"
- * convention — rather than an observed real-world shape. Standalone export,
- * not in the integration response. If the cascade ever drops the no-mime
- * branch, drop this fixture with it.
- */
-export const fungibleTokenWithCdnNoMime = {
-  interface: 'FungibleToken',
-  id: 'GmAxym41jdMQ6WG92btzgfizva7gLKbCTQKu8bWFNzPm',
-  content: {
-    files: [
-      {
-        uri: 'https://example.invalid/no-mime/logo.png',
-        cdn_uri:
-          'https://cdn.helius-rpc.com/cdn-cgi/image//https://example.invalid/no-mime/logo.png',
-        // mime intentionally omitted — exercises the no-mime safety branch
-      },
-    ],
-    metadata: {
-      name: 'No-Mime Token',
-      symbol: 'NMT',
-    },
-  },
-  ownership: {
-    owner: FIXTURE_OWNER,
-  },
-  token_info: {
-    balance: 1_500_000n,
-    decimals: 6,
-    token_program: 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA',
-  },
-}
-
-/**
  * Synthetic defensive case. Non-image mime in `files[]` plus `links.image` —
  * asserts the cascade skips non-image files AND falls through to
  * `links.image` (a single "skip" assertion alone could be passed by
@@ -555,8 +524,8 @@ export const nativeBalanceFixture = {
  * Realistic `getAssetsByOwner` response with mixed asset types and native
  * balance. Includes the impersonator and the bidi / long-name sanitization
  * cases so route-level tests exercise them through the rendered table. The
- * no-mime and non-image-mime defensive cases stay out of this response —
- * they are standalone exports for targeted Phase 1 unit tests.
+ * non-image-mime defensive case stays out of this response and is consumed
+ * as a standalone export by targeted unit tests.
  */
 export const dasGetAssetsByOwnerResponse = {
   total: 8,
