@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  firstGraphemes,
   formatBalance,
   formatTokenAmount,
   sanitizeDisplayText,
@@ -205,5 +206,31 @@ describe('formatTokenAmount', () => {
     // outcome is intentional; richer dust UX (e.g. "<0.0001") is owned by
     // the dust-handling pass.
     expect(formatTokenAmount(1n, 9, 'en-US')).toBe('0')
+  })
+})
+
+describe('firstGraphemes', () => {
+  it('returns the first N ASCII characters', () => {
+    expect(firstGraphemes('USDC', 2)).toBe('US')
+  })
+
+  it('counts in graphemes, not UTF-16 code units', () => {
+    // '🚀' is one grapheme that spans two UTF-16 code units, so
+    // '🚀TKN'.slice(0, 2) returns the rocket alone. firstGraphemes counts
+    // in graphemes and returns the rocket plus 'T'.
+    expect(firstGraphemes('🚀TKN', 2)).toBe('🚀T')
+  })
+
+  it('returns the empty string for count <= 0', () => {
+    expect(firstGraphemes('USDC', 0)).toBe('')
+    expect(firstGraphemes('USDC', -1)).toBe('')
+  })
+
+  it('returns the whole string when count exceeds the grapheme count', () => {
+    expect(firstGraphemes('US', 10)).toBe('US')
+  })
+
+  it('returns the empty string for empty input', () => {
+    expect(firstGraphemes('', 5)).toBe('')
   })
 })

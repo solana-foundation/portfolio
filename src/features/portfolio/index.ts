@@ -1,7 +1,9 @@
+export { TokenIdentity } from './components/token-identity'
 export { TokenListModal } from './components/token-list-modal'
 export type { DasRpc } from './das-plugin'
 export { das } from './das-plugin'
 export {
+  firstGraphemes,
   formatBalance,
   formatTokenAmount,
   sanitizeDisplayText,

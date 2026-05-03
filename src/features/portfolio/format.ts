@@ -65,6 +65,21 @@ function getGraphemeSegmenter(): Intl.Segmenter {
  * truth about what's on chain. Impersonator defense belongs to a
  * trust-source pass.
  */
+/**
+ * Return the first `count` graphemes of `value`, joined back into a string.
+ * Grapheme-aware so emoji and combining sequences are not split mid-character.
+ */
+export function firstGraphemes(value: string, count: number): string {
+  if (count <= 0) return ''
+  const segmenter = getGraphemeSegmenter()
+  const out: string[] = []
+  for (const segment of segmenter.segment(value)) {
+    out.push(segment.segment)
+    if (out.length >= count) break
+  }
+  return out.join('')
+}
+
 export function sanitizeDisplayText(
   value: string,
   options?: { maxLength?: number },
