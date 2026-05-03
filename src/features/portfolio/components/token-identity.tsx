@@ -1,7 +1,7 @@
 import { BadgeCheck } from 'lucide-react'
-import { useState } from 'react'
-import { firstGraphemes, sanitizeDisplayText } from '../format'
+import { sanitizeDisplayText } from '../format'
 import type { PortfolioAsset } from '../types'
+import { TokenIcon } from './token-icon'
 
 const SYMBOL_MAX_LENGTH = 20
 const NAME_MAX_LENGTH = 60
@@ -18,17 +18,6 @@ type TokenIdentityProps = {
 }
 
 export function TokenIdentity({ asset, verified = false }: TokenIdentityProps) {
-  const [loadErrored, setLoadErrored] = useState(false)
-  // Reset the runtime image-error state when the source URL changes — this
-  // component is reusable, and a refetch can swap imageUrl on the same row.
-  const [prevImageUrl, setPrevImageUrl] = useState(asset.imageUrl)
-  if (prevImageUrl !== asset.imageUrl) {
-    setPrevImageUrl(asset.imageUrl)
-    setLoadErrored(false)
-  }
-
-  const displayImage = loadErrored ? null : asset.imageUrl
-
   const sanitizedSymbol = sanitizeDisplayText(asset.symbol, {
     maxLength: SYMBOL_MAX_LENGTH,
   })
@@ -50,6 +39,10 @@ export function TokenIdentity({ asset, verified = false }: TokenIdentityProps) {
     lastResortLabel
   const accessibleLabel = sanitizedName || sanitizedSymbol || lastResortLabel
 
+  // The symbol text already announces the token in this layout, so when the
+  // would-be alt collapses to the same string the image is decorative.
+  // Native SOL keeps an explicit alt because the brand mark is a global
+  // identity and tests lock the contract.
   const imageIsPresentational =
     asset.kind !== 'native' && displaySymbol === accessibleLabel
   const imageAlt =
@@ -61,22 +54,12 @@ export function TokenIdentity({ asset, verified = false }: TokenIdentityProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {displayImage !== null ? (
-        <img
-          src={displayImage}
-          alt={imageAlt}
-          aria-hidden={imageIsPresentational || undefined}
-          onError={() => setLoadErrored(true)}
-          className="size-4 overflow-hidden rounded-full object-contain lg:size-5"
-        />
-      ) : (
-        <div
-          aria-hidden="true"
-          className="flex size-4 items-center justify-center overflow-hidden rounded-full bg-muted text-[12px] font-light text-muted-foreground lg:size-5"
-        >
-          {firstGraphemes(displaySymbol, 2).toUpperCase()}
-        </div>
-      )}
+      <TokenIcon
+        asset={asset}
+        alt={imageAlt}
+        fallbackLabel={displaySymbol}
+        size="sm"
+      />
       <span className="flex items-center gap-1 font-sans text-sm font-normal text-foreground">
         {displaySymbol}
         {/* Trust-signal source is deferred. */}
@@ -85,7 +68,7 @@ export function TokenIdentity({ asset, verified = false }: TokenIdentityProps) {
             role="img"
             aria-label="Verified token"
             data-slot="verified-badge"
-            className="text-primary"
+            className="text-success"
           >
             <BadgeCheck className="size-3.5" />
           </span>

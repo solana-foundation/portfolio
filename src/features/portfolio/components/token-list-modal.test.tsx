@@ -75,4 +75,102 @@ describe('TokenListModal', () => {
       expect((slot as HTMLElement).textContent).toBe('')
     }
   })
+
+  it('omits rounded-full on the native SOL icon so the bundled brand mark is not corner-clipped', () => {
+    render(<TokenListModal open onOpenChange={() => {}} items={[SOL]} />)
+    const row = screen.getAllByRole('listitem')[0]!
+    const img = row.querySelector('img')
+    expect(img).not.toBeNull()
+    expect(img?.className).not.toContain('rounded-full')
+  })
+
+  it('uses an explicit "Solana" alt on the native SOL icon', () => {
+    render(<TokenListModal open onOpenChange={() => {}} items={[SOL]} />)
+    expect(screen.getByAltText('Solana')).toBeInTheDocument()
+  })
+
+  it('keeps rounded-full on SPL token icons', () => {
+    render(<TokenListModal open onOpenChange={() => {}} items={[USDC]} />)
+    const row = screen.getAllByRole('listitem')[0]!
+    const img = row.querySelector('img')
+    expect(img).not.toBeNull()
+    expect(img?.className).toContain('rounded-full')
+  })
+
+  it('renders SPL token icons as presentational since name and symbol are both visible nearby', () => {
+    render(<TokenListModal open onOpenChange={() => {}} items={[USDC]} />)
+    const row = screen.getAllByRole('listitem')[0]!
+    const img = row.querySelector('img')
+    expect(img?.getAttribute('alt')).toBe('')
+    expect(img?.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('strips bidi-override characters from the rendered name', () => {
+    const RTL = '\u202E'
+    const bidiNameAsset: PortfolioAsset = {
+      ...USDC,
+      name: `Safe${RTL}BidiToken`,
+    }
+    render(
+      <TokenListModal open onOpenChange={() => {}} items={[bidiNameAsset]} />,
+    )
+    expect(document.body.textContent ?? '').not.toContain(RTL)
+    expect(screen.getByText('SafeBidiToken')).toBeInTheDocument()
+  })
+
+  it('strips bidi-override characters from the rendered symbol', () => {
+    const RTL = '\u202E'
+    const bidiSymbolAsset: PortfolioAsset = {
+      ...USDC,
+      symbol: `B${RTL}IDI`,
+    }
+    render(
+      <TokenListModal open onOpenChange={() => {}} items={[bidiSymbolAsset]} />,
+    )
+    expect(document.body.textContent ?? '').not.toContain(RTL)
+    expect(screen.getByText('BIDI')).toBeInTheDocument()
+  })
+
+  it('renders the balance with locale grouping for large amounts', () => {
+    const largeAsset: PortfolioAsset = {
+      ...USDC,
+      // 1,234,567 USDC -> 1234567_000_000 raw at 6 decimals.
+      rawBalance: 1_234_567_000_000n,
+    }
+    render(<TokenListModal open onOpenChange={() => {}} items={[largeAsset]} />)
+    const row = screen.getAllByRole('listitem')[0]!
+    // Match digits with any locale grouping mark; locks the use of
+    // formatTokenAmount over formatBalance (the latter would render
+    // "1234567" with no grouping mark).
+    expect(within(row).getByText(/1\D234\D567/)).toBeInTheDocument()
+  })
+
+  it('falls back to the truncated mint when both name and symbol sanitize to empty', () => {
+    const RTL = '\u202E'
+    const erasedSpl: PortfolioAsset = {
+      ...USDC,
+      symbol: RTL,
+      name: RTL,
+    }
+    render(<TokenListModal open onOpenChange={() => {}} items={[erasedSpl]} />)
+    const row = screen.getAllByRole('listitem')[0]!
+    // Truncated form of EPjFWdd5...EGGkZwyTDt1v.
+    expect(within(row).getAllByText('EPjF...Dt1v').length).toBeGreaterThan(0)
+    expect(document.body.textContent ?? '').not.toContain(RTL)
+  })
+
+  it('falls back to "SOL" for native when both name and symbol sanitize to empty', () => {
+    const RTL = '\u202E'
+    const erasedNative: PortfolioAsset = {
+      ...SOL,
+      symbol: RTL,
+      name: RTL,
+    }
+    render(
+      <TokenListModal open onOpenChange={() => {}} items={[erasedNative]} />,
+    )
+    const row = screen.getAllByRole('listitem')[0]!
+    expect(within(row).getAllByText('SOL').length).toBeGreaterThan(0)
+    expect(document.body.textContent ?? '').not.toContain(RTL)
+  })
 })

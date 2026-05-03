@@ -1,4 +1,5 @@
 import { address } from '@solana/kit'
+import nativeSolIcon from '@/assets/native-sol.svg'
 import {
   createNativeAssetId,
   createSplAssetId,
@@ -111,7 +112,7 @@ export function normalizeDasResponse(
       id: createNativeAssetId(),
       symbol: 'SOL',
       name: 'Solana',
-      imageUrl: null,
+      imageUrl: nativeSolIcon,
       rawBalance: nativeBalance.lamports,
       decimals: 9,
     })

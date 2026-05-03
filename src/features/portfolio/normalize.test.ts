@@ -136,6 +136,21 @@ describe('normalizeDasResponse', () => {
 
       expect(result.items).toHaveLength(0)
     })
+
+    it('sets imageUrl for native SOL to the bundled brand mark', () => {
+      const response = makeResponse([], {
+        nativeBalance: nativeBalanceFixture,
+      })
+
+      const result = normalizeDasResponse(response)
+
+      const sol = result.items[0]!
+      // Vite resolves static asset imports to either a filename-based URL
+      // (production: hashed `…native-sol-<hash>.svg`) or an inlined
+      // `data:image/svg+xml,…` URL (test/dev when small enough). Accept both.
+      expect(sol.imageUrl).toBeTruthy()
+      expect(sol.imageUrl).toMatch(/native-sol|svg/i)
+    })
   })
 
   // -----------------------------------------------------------------------

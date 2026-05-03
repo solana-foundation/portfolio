@@ -250,6 +250,25 @@ describe('TokenIdentity', () => {
     expect(screen.getByRole('img').className).toContain('object-contain')
   })
 
+  it('keeps rounded-full on SPL token icons so DAS-served circular logos fill the box', () => {
+    render(<TokenIdentity asset={usdcAsset} />)
+    expect(screen.getByRole('img').className).toContain('rounded-full')
+  })
+
+  it('omits rounded-full for native SOL so the wide brand mark is not corner-clipped', () => {
+    const nativeAsset: PortfolioAsset = {
+      kind: 'native',
+      id: 'native:SOL',
+      symbol: 'SOL',
+      name: 'Solana',
+      imageUrl: '/native-sol.svg',
+      rawBalance: 1n,
+      decimals: 9,
+    }
+    render(<TokenIdentity asset={nativeAsset} />)
+    expect(screen.getByRole('img').className).not.toContain('rounded-full')
+  })
+
   it('uses grapheme-aware truncation for the initials fallback', () => {
     const emojiAsset: PortfolioAsset = {
       ...usdcAsset,
