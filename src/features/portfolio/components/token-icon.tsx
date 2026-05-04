@@ -17,6 +17,14 @@ const SIZE_CLASSES: Record<TokenIconSize, string> = {
   md: 'size-8',
 }
 
+// Square pixel dimensions of the layout box at the smallest variant width.
+// Browsers reserve aspect-ratio space from these attributes before CSS loads;
+// CSS overrides the actual rendered size at lg breakpoints.
+const SIZE_PIXELS: Record<TokenIconSize, number> = {
+  sm: 16,
+  md: 32,
+}
+
 const FALLBACK_TEXT_CLASSES: Record<TokenIconSize, string> = {
   sm: 'text-[12px] font-light',
   md: 'text-xs font-medium',
@@ -34,6 +42,7 @@ export function TokenIcon({ asset, alt, fallbackLabel, size }: TokenIconProps) {
 
   const displayImage = loadErrored ? null : asset.imageUrl
   const sizeClasses = SIZE_CLASSES[size]
+  const sizePx = SIZE_PIXELS[size]
 
   if (displayImage !== null) {
     return (
@@ -41,6 +50,10 @@ export function TokenIcon({ asset, alt, fallbackLabel, size }: TokenIconProps) {
         src={displayImage}
         alt={alt}
         aria-hidden={alt === '' || undefined}
+        width={sizePx}
+        height={sizePx}
+        loading="lazy"
+        decoding="async"
         onError={() => setLoadErrored(true)}
         className={cn(
           sizeClasses,

@@ -153,6 +153,46 @@ describe('TokenIcon', () => {
     )
   })
 
+  it('renders the image with loading="lazy" and decoding="async" so long token lists do not block the main thread', () => {
+    render(
+      <TokenIcon
+        asset={splAsset}
+        alt="USD Coin"
+        fallbackLabel="USDC"
+        size="sm"
+      />,
+    )
+    const img = screen.getByRole('img')
+    expect(img).toHaveAttribute('loading', 'lazy')
+    expect(img).toHaveAttribute('decoding', 'async')
+  })
+
+  it('sets explicit square width/height attributes per size variant so browsers reserve aspect ratio before CSS loads', () => {
+    const { rerender } = render(
+      <TokenIcon
+        asset={splAsset}
+        alt="USD Coin"
+        fallbackLabel="USDC"
+        size="sm"
+      />,
+    )
+    const sm = screen.getByRole('img')
+    expect(sm).toHaveAttribute('width', '16')
+    expect(sm).toHaveAttribute('height', '16')
+
+    rerender(
+      <TokenIcon
+        asset={splAsset}
+        alt="USD Coin"
+        fallbackLabel="USDC"
+        size="md"
+      />,
+    )
+    const md = screen.getByRole('img')
+    expect(md).toHaveAttribute('width', '32')
+    expect(md).toHaveAttribute('height', '32')
+  })
+
   it('size="sm" renders at size-4 with lg:size-5', () => {
     render(
       <TokenIcon
