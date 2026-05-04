@@ -83,10 +83,9 @@ Coverage thresholds are not enforced yet. The goal is visibility: identify gaps 
 
 ## Contributing
 
-1. Run `pnpm lint`, `pnpm typecheck`, and `pnpm test` before pushing
-2. All code must pass Biome checks and TypeScript strict mode
-3. Tests are colocated with source files (`*.test.ts` / `*.test.tsx`)
-4. CI runs lint, typecheck, test, and `build:vite` on every pull request — all checks must pass before merge
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full workflow — local setup, branch and commit conventions, the pull request process, CI debugging, and dependency updates.
+
+Quick rules: run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build:vite` before pushing. All four must pass in CI before merge.
 
 ## Preview Deployments
 

@@ -49,3 +49,4 @@ Open-source Solana portfolio tracker. Vite + React + TypeScript + Tailwind v4.
 ## Documentation Maintenance
 When adding a new feature module to `src/features/`, update the system overview if it exists.
 When introducing a new convention, consider whether it belongs here or in a path-scoped `.claude/rules/` file.
+Contributor-facing workflow (setup, PR, CI debugging, deps) lives in `CONTRIBUTING.md` — link there from `README.md`, do not duplicate.
