@@ -55,17 +55,6 @@ function getGraphemeSegmenter(): Intl.Segmenter {
 }
 
 /**
- * Display-time hygiene for token names and symbols. Strips control and bidi
- * characters, collapses whitespace runs, trims, then truncates with a
- * trailing horizontal ellipsis. `maxLength` is the cap on the rendered
- * output in user-visible characters (graphemes), ellipsis included; a
- * 20-char cap produces at most 20 graphemes. `maxLength <= 0` returns an
- * empty string. Homoglyph / NFKC normalization is out of scope — printable
- * confusables (U+00B7 middle-dot, etc.) are preserved so the app tells the
- * truth about what's on chain. Impersonator defense belongs to a
- * trust-source pass.
- */
-/**
  * Return the first `count` graphemes of `value`, joined back into a string.
  * Grapheme-aware so emoji and combining sequences are not split mid-character.
  */
@@ -80,6 +69,17 @@ export function firstGraphemes(value: string, count: number): string {
   return out.join('')
 }
 
+/**
+ * Display-time hygiene for token names and symbols. Strips control and bidi
+ * characters, collapses whitespace runs, trims, then truncates with a
+ * trailing horizontal ellipsis. `maxLength` is the cap on the rendered
+ * output in user-visible characters (graphemes), ellipsis included; a
+ * 20-char cap produces at most 20 graphemes. `maxLength <= 0` returns an
+ * empty string. Homoglyph / NFKC normalization is out of scope — printable
+ * confusables (U+00B7 middle-dot, etc.) are preserved so the app tells the
+ * truth about what's on chain. Impersonator defense belongs to a
+ * trust-source pass.
+ */
 export function sanitizeDisplayText(
   value: string,
   options?: { maxLength?: number },
