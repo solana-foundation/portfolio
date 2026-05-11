@@ -1,0 +1,70 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    reviewers:
+      - "jimmyMsh"
+      - "GuiBibeau"
+      - "jkumari08"
+    groups:
+      production:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "jsdom"
+          - "@biomejs/*"
+          - "typescript"
+          - "vite"
+          - "@vitejs/*"
+          - "@tailwindcss/vite"
+          - "@tanstack/router-devtools"
+          - "@tanstack/router-plugin"
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "jsdom"
+        update-types:
+          - "minor"
+          - "patch"
+      tooling:
+        patterns:
+          - "@biomejs/*"
+          - "typescript"
+          - "vite"
+          - "@vitejs/*"
+          - "@tailwindcss/vite"
+          - "@tanstack/router-devtools"
+          - "@tanstack/router-plugin"
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "area:ci"
+    reviewers:
+      - "jimmyMsh"
+      - "GuiBibeau"
+      - "jkumari08"

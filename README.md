@@ -92,3 +92,28 @@ Quick rules: run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build:vit
 Every pull request automatically receives a preview deployment via Vercel. The preview URL appears as a comment on the PR and as a deployment status check. No configuration is needed from contributors.
 
 Preview builds use `pnpm build:vite` — the same command CI runs. If the preview fails, check the Vercel deployment logs linked from the PR status check.
+
+## Dependency Updates
+
+Dependabot opens grouped update PRs every Monday. Configuration lives in `.github/dependabot.yml`.
+
+### Groups
+
+npm minor and patch updates are grouped into three PRs to reduce review load:
+
+- **production** — runtime dependencies (`@solana/*`, `@tanstack/react-*`, `@wallet-ui/*`, `react`, `react-dom`, `tailwindcss`)
+- **testing** — `vitest`, `@vitest/*`, `@testing-library/*`, `jsdom`
+- **tooling** — `@biomejs/*`, `typescript`, `vite`, `@vitejs/*`, `@tailwindcss/vite`, `@tanstack/router-devtools`, `@tanstack/router-plugin`, `@types/*`
+
+GitHub Actions updates are handled as a separate ecosystem and opened as their own PR(s).
+
+Major version bumps are **not** grouped — each major lands in its own PR so the change can be reviewed carefully against breaking-change notes.
+
+### Reviewing update PRs
+
+1. Confirm the CI quality check passes (`lint`, `typecheck`, `test:coverage`, `build:vite`).
+2. Review release notes linked in the PR body for each package in the group.
+3. For majors, read the upstream migration guide before merging.
+4. Merge manually — there is no auto-merge.
+
+If a single package in a grouped PR breaks CI, rebase the PR without that package and open a separate PR for the problem update.
