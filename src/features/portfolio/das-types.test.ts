@@ -22,10 +22,10 @@ describe('DasAssetList', () => {
   it('accepts the full dasGetAssetsByOwnerResponse fixture', () => {
     const list: DasAssetList = dasGetAssetsByOwnerResponse
 
-    expect(list.total).toBe(5)
+    expect(list.total).toBe(8)
     expect(list.limit).toBe(1000)
     expect(list.page).toBe(1)
-    expect(list.items).toHaveLength(5)
+    expect(list.items).toHaveLength(8)
     expect(list.nativeBalance).toBeDefined()
   })
 

@@ -46,7 +46,7 @@
 
 ## Reading Figma extractions
 
-- The React/Tailwind code blocks in `docs/architecture/figma-v2-raw/*` and any future Figma MCP output are machine-generated from the visual design tree. Treat them as measurement artifacts (sizes, colors, fills, spacing, frame structure) — not production source. Use the values; map them onto the project's existing primitives and components. Generated names like `Frame1597880827`, absolute positioning, and one-variant snapshots are extraction artifacts, not implementation guidance.
+- React/Tailwind code blocks from saved Figma extraction output or future Figma MCP output are machine-generated from the visual design tree. Treat them as measurement artifacts (sizes, colors, fills, spacing, frame structure) — not production source. Use the values; map them onto the project's existing primitives and components. Generated names like `Frame1597880827`, absolute positioning, and one-variant snapshots are extraction artifacts, not implementation guidance.
 
 ## Do not
 

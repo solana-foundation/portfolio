@@ -1,8 +1,20 @@
-import type { Address } from '@solana/kit'
+import { address } from '@solana/kit'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PortfolioAssetList } from '@/features/portfolio'
+import {
+  dasNativeAndWrappedSolResponse,
+  fungibleTokenItem,
+  impersonatorItem,
+} from '@/features/portfolio/__fixtures__/das-get-assets-by-owner'
+import {
+  createNativeAssetId,
+  createSplAssetId,
+} from '@/features/portfolio/asset-identity'
+import type { DasAsset, DasAssetList } from '@/features/portfolio/das-types'
+import { normalizeDasResponse } from '@/features/portfolio/normalize'
+import { SPL_TOKEN_PROGRAM_ID } from '@/features/portfolio/solana-constants'
 import { renderWithRouter } from '@/test/render'
 
 // --- Wallet mock: control connection state per-test ---
@@ -48,6 +60,10 @@ beforeEach(() => {
     refetch: mockRefetch,
   }
   mockRefetch.mockReset()
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
 })
 
 describe('/portfolio route', () => {
@@ -148,27 +164,30 @@ describe('/portfolio route', () => {
 
   it('renders the header and token rows when the wallet has assets', async () => {
     mockAccount = { address: 'TestAddr123' }
+    const usdcMint = address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
     mockPortfolio = {
       ...mockPortfolio,
       data: {
         items: [
           {
-            mint: 'So11111111111111111111111111111111111111112' as Address,
+            kind: 'native',
+            id: createNativeAssetId(),
             symbol: 'SOL',
             name: 'Solana',
             imageUrl: 'https://example.com/sol.png',
             rawBalance: 5_000_000_000n,
             decimals: 9,
-            kind: 'native',
           },
           {
-            mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' as Address,
+            kind: 'spl-token',
+            id: createSplAssetId(SPL_TOKEN_PROGRAM_ID, usdcMint),
+            mint: usdcMint,
+            tokenProgram: SPL_TOKEN_PROGRAM_ID,
             symbol: 'USDC',
             name: 'USD Coin',
             imageUrl: 'https://example.com/usdc.png',
             rawBalance: 1_000_000n,
             decimals: 6,
-            kind: 'spl-token',
           },
         ],
         total: 2,
@@ -188,6 +207,80 @@ describe('/portfolio route', () => {
     expect(
       document.querySelector('[data-slot="filter-row-skeleton"]'),
     ).toBeInTheDocument()
+  })
+
+  it('renders USDC and the Solana· impersonator with parallel identity-cell structure and no verified affordance', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    const response: DasAssetList = {
+      total: 2,
+      limit: 1000,
+      page: 1,
+      items: [fungibleTokenItem as DasAsset, impersonatorItem as DasAsset],
+    }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: normalizeDasResponse(response),
+    }
+
+    await renderWithRouter('/portfolio')
+
+    const tableRegion = screen.getByRole('region', { name: /token list/i })
+
+    const usdcRow = within(tableRegion).getByText('USDC').closest('tr')
+    const impersonatorRow = within(tableRegion).getByText('$SOL').closest('tr')
+    expect(usdcRow).not.toBeNull()
+    expect(impersonatorRow).not.toBeNull()
+    expect(usdcRow).not.toBe(impersonatorRow)
+
+    expect(
+      within(usdcRow as HTMLElement).getByAltText('USD Coin'),
+    ).toBeInTheDocument()
+    expect(
+      within(impersonatorRow as HTMLElement).getByAltText('Solana·'),
+    ).toBeInTheDocument()
+
+    const usdcImg = within(usdcRow as HTMLElement).queryByRole('img')
+    const impersonatorImg = within(impersonatorRow as HTMLElement).queryByRole(
+      'img',
+    )
+    expect(Boolean(usdcImg)).toBe(true)
+    expect(Boolean(impersonatorImg)).toBe(true)
+
+    for (const row of [usdcRow, impersonatorRow] as HTMLElement[]) {
+      expect(within(row).queryByLabelText('Verified token')).toBeNull()
+      expect(row.querySelector('[data-slot="verified-badge"]')).toBeNull()
+      expect(row.querySelector('[data-verified="true"]')).toBeNull()
+      expect(within(row).queryByText(/^Verified$/i)).toBeNull()
+    }
+  })
+
+  it('renders distinct rows for native SOL and wSOL without a React duplicate-key warning', async () => {
+    mockAccount = { address: 'TestAddr123' }
+    mockPortfolio = {
+      ...mockPortfolio,
+      data: normalizeDasResponse(
+        dasNativeAndWrappedSolResponse as DasAssetList,
+      ),
+    }
+
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    await renderWithRouter('/portfolio')
+
+    const tableRegion = screen.getByRole('region', { name: /token list/i })
+    const rowgroups = within(tableRegion).getAllByRole('rowgroup')
+    const bodyRows = within(rowgroups[1] as HTMLElement).getAllByRole('row')
+    expect(bodyRows).toHaveLength(2)
+
+    const symbolHits = within(rowgroups[1] as HTMLElement).getAllByText('SOL')
+    expect(symbolHits).toHaveLength(2)
+
+    const duplicateKeyCalls = consoleErrorSpy.mock.calls.filter((call) =>
+      /Encountered two children with the same key/.test(String(call[0])),
+    )
+    expect(duplicateKeyCalls).toHaveLength(0)
   })
 
   it('locks the outer page shell padding (outer node) and content max-width (inner node)', async () => {

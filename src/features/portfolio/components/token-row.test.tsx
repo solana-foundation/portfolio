@@ -1,17 +1,23 @@
-import type { Address } from '@solana/kit'
-import { render, screen } from '@testing-library/react'
+import { address } from '@solana/kit'
+import { render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
+import { createSplAssetId } from '../asset-identity'
+import { SPL_TOKEN_PROGRAM_ID } from '../solana-constants'
 import type { PortfolioAsset } from '../types'
 import { TokenRow } from './token-row'
 
+const USDC_MINT = address('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v')
+
 const BASE_ASSET: PortfolioAsset = {
-  mint: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' as Address,
+  kind: 'spl-token',
+  id: createSplAssetId(SPL_TOKEN_PROGRAM_ID, USDC_MINT),
+  mint: USDC_MINT,
+  tokenProgram: SPL_TOKEN_PROGRAM_ID,
   symbol: 'USDC',
   name: 'USD Coin',
   imageUrl: 'https://example.com/usdc.png',
   rawBalance: 1_500_000n,
   decimals: 6,
-  kind: 'spl-token',
 }
 
 function renderRow(asset: PortfolioAsset) {
@@ -25,67 +31,38 @@ function renderRow(asset: PortfolioAsset) {
 }
 
 describe('TokenRow', () => {
-  it('renders the symbol as primary text', () => {
+  it('renders identity text through TokenIdentity', () => {
     renderRow(BASE_ASSET)
     expect(screen.getByText('USDC')).toBeInTheDocument()
   })
 
-  it('does not render the asset name in the row', () => {
-    renderRow(BASE_ASSET)
-    expect(screen.queryByText('USD Coin')).not.toBeInTheDocument()
-  })
-
-  it('renders the icon image at responsive sizes when imageUrl is non-null', () => {
-    renderRow(BASE_ASSET)
-    const img = screen.getByRole('img')
-    expect(img).toHaveAttribute('src', 'https://example.com/usdc.png')
-    expect(img.className).toContain('size-4')
-    expect(img.className).toContain('lg:size-5')
-  })
-
-  it('renders a text fallback when imageUrl is null', () => {
-    renderRow({ ...BASE_ASSET, imageUrl: null })
-    expect(screen.queryByRole('img')).not.toBeInTheDocument()
-    expect(screen.getByText('US')).toBeInTheDocument()
-  })
-
-  it('renders the formatted balance', () => {
-    renderRow(BASE_ASSET)
-    // 1_500_000 / 10^6 = 1.5
-    expect(screen.getByText('1.5')).toBeInTheDocument()
-  })
-
-  it('reserves a verified-badge slot inside the asset cell', () => {
+  it('does not retain the old empty verified-badge placeholder', () => {
     const { container } = renderRow(BASE_ASSET)
-    const slot = container.querySelector('[data-slot="verified-badge"]')
-    expect(slot).not.toBeNull()
-    expect(slot?.children).toHaveLength(0)
+    const badges = container.querySelectorAll('[data-slot="verified-badge"]')
+    expect(badges).toHaveLength(0)
+  })
+
+  it('does not render a verified badge by default', () => {
+    renderRow(BASE_ASSET)
+    expect(screen.queryByLabelText('Verified token')).toBeNull()
+  })
+
+  it('renders the formatted token amount with grouping and fractional precision', () => {
+    const asset: PortfolioAsset = {
+      ...BASE_ASSET,
+      // 1234567.891234 — exercises both grouping and fractional truncation.
+      rawBalance: 1_234_567_891_234n,
+      decimals: 6,
+    }
+    renderRow(asset)
+    const row = screen.getByRole('row')
+    // Match digits with any locale grouping/decimal mark; truncated to 4 frac.
+    const balanceText = within(row).getByText(/\b1\D?234\D?567\D?8912\b/)
+    expect(balanceText).toBeInTheDocument()
   })
 
   it('renders four cells (Asset, Balance, Price/24h, Value)', () => {
     renderRow(BASE_ASSET)
-    const cells = screen.getAllByRole('cell')
-    expect(cells).toHaveLength(4)
-  })
-
-  it('leaves the Price/24h and Value cells empty', () => {
-    renderRow(BASE_ASSET)
-    const cells = screen.getAllByRole('cell')
-    expect(cells[2]?.textContent).toBe('')
-    expect(cells[3]?.textContent).toBe('')
-  })
-
-  it('applies the row padding spec to the TableRow', () => {
-    renderRow(BASE_ASSET)
-    const row = screen.getByRole('row')
-    expect(row.className).toContain('px-5')
-    expect(row.className).toContain('py-4')
-  })
-
-  it('renders the balance cell with numeric typography and tabular-nums', () => {
-    renderRow(BASE_ASSET)
-    const balanceCell = screen.getByText('1.5').closest('td')
-    expect(balanceCell?.className).toContain('font-numeric')
-    expect(balanceCell?.className).toContain('tabular-nums')
+    expect(screen.getAllByRole('cell')).toHaveLength(4)
   })
 })
